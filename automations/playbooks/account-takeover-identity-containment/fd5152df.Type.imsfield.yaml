@@ -1,0 +1,5 @@
+id_field: incidents
+type: 12
+visible: 1
+name: Type
+data_type: '{}'

@@ -15,7 +15,7 @@ reusable content — that you can import into your own Sumo Logic environment.
 
 | Playbook | Description |
 | --- | --- |
-| [Account Takeover - Identity Containment](automations/playbooks/Account_Takeover_-_Identity_Containment.json) | Analyst-initiated ATO response: validate the user in Azure AD, gate on analyst approval, then revoke Azure AD sessions, reset the on-prem AD password (synced to Azure AD and Google Workspace), and suspend/re-enable the Google Workspace account to invalidate Google sessions. |
+| [Account Takeover - Identity Containment](automations/playbooks/account-takeover-identity-containment/) | Analyst-initiated ATO response: validate the user in Azure AD, gate on analyst approval, then revoke Azure AD sessions, reset the on-prem AD password (synced to Azure AD and Google Workspace), and suspend/re-enable the Google Workspace account to invalidate Google sessions. |
 
 ## Using a dashboard
 
@@ -71,34 +71,36 @@ export/import format.
 
 ### Import
 
-The import dialog rejects raw `.json` files — that export format is intended
-for Terraform (`sumologic_csoar_playbook`). It expects an archive. Sumo
-Logic's own shareable playbooks ([sumologic-content](https://github.com/SumoLogic/sumologic-content/tree/master/CloudSOAR/Playbooks))
-ship as a **ZIP containing a single file named exactly `playbook_to_import.json`**:
+Playbooks are shared in the Automation Service **Export All (ZIP Format)**
+bundle layout: a `tar.gz` archive of YAML files named
+`<unique_id>.<name>.<file_type>.yaml` (see the
+[playbook docs](https://www.sumologic.com/help/docs/platform-services/automation-service/playbooks/create-playbooks/#export-and-import-playbooks)).
+The repo stores the bundle's files unpacked (so they diff nicely); package and
+import them like this:
 
-1. Package the playbook (note the required inner file name):
+1. Build the archive (file names inside must stay exactly as-is — the playbook
+   references its sibling files by name):
 
    ```sh
-   cp automations/playbooks/Account_Takeover_-_Identity_Containment.json \
-      playbook_to_import.json
-   zip Account_Takeover_-_Identity_Containment.zip playbook_to_import.json
+   cd automations/playbooks/account-takeover-identity-containment
+   tar -czf Account_Takeover_-_Identity_Containment.tar.gz *.yaml
    ```
 
 2. In Sumo Logic, go to **Automation ▸ Playbooks**.
-3. Click the **Import** icon and select the `.zip` file.
+3. Click the **Import** icon and select the `.tar.gz` file.
 
-If your tenant's import instead expects the newer **Export All (ZIP Format)**
-bundle — a `tar.gz` whose inner files are named
-`<unique_id>.<name>.<file_type>.<extension>` (see the
-[playbook docs](https://www.sumologic.com/help/docs/platform-services/automation-service/playbooks/create-playbooks/#export-and-import-playbooks)) —
-package it as:
+The bundle also carries `Type.imsfield` / `Account-Takeover.imslistvalue`
+definitions so the playbook imports with an "Account Takeover" type, mirroring
+how real exports package the playbook type.
 
-```sh
-cp automations/playbooks/Account_Takeover_-_Identity_Containment.json \
-   ab12cd34.Account-Takeover-Identity-Containment.playbook.json
-tar -czf Account_Takeover_-_Identity_Containment.tar.gz \
-   ab12cd34.Account-Takeover-Identity-Containment.playbook.json
-```
+> **Note:** integration and action definitions are cryptographically signed by
+> Sumo Logic and are therefore *not* included — install the integrations from
+> App Central instead, then bind each action node to your resources
+> (see below). A legacy-format JSON export
+> ([Account_Takeover_-_Identity_Containment.json](automations/playbooks/Account_Takeover_-_Identity_Containment.json))
+> is kept for Terraform (`sumologic_csoar_playbook`) and older Cloud SOAR
+> tenants, whose import instead expects a ZIP containing
+> `playbook_to_import.json`.
 
 ### Post-import wiring (required)
 

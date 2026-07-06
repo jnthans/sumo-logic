@@ -1,0 +1,269 @@
+description: 'Analyst-initiated account takeover (ATO) identity containment: validate the target user in Azure AD, gate on analyst approval, then revoke Azure AD sign-in sessions, reset the on-prem Active Directory password (synced to Azure AD and Google Workspace), and suspend/re-enable the Google Workspace account to invalidate Google sessions. Finishes with a documentation/handoff task.'
+name: Account Takeover - Identity Containment
+tags: ''
+is_deleted: false
+is_enabled: true
+kill_on_error: false
+last_updated: 2026-07-06 00:00:00.000001
+links:
+- id: bc3d994a-d893-4cdf-89ee-2c890d61dbaf
+  source:
+    id: b6f95185-4bef-440c-ab4b-8a8df210ac0b
+    port: out
+  target:
+    id: 043cc54d-0317-4cea-a0e4-35e05a5b23a2
+    port: in
+- id: f20b250e-1a25-4cc0-b410-b33783b446cb
+  source:
+    id: 043cc54d-0317-4cea-a0e4-35e05a5b23a2
+    port: out
+  target:
+    id: f064da8d-c7cf-495a-925b-295edc93a0e0
+    port: in
+- id: bc7c1906-5a28-4b4f-afbe-d40b3095cd0c
+  source:
+    id: f064da8d-c7cf-495a-925b-295edc93a0e0
+    port: Contain
+  target:
+    id: a01db0c5-d54e-464d-8ec0-f7ed58fcc33f
+    port: in
+- id: 5e946d6e-e3ac-445b-b850-7caa1180711a
+  source:
+    id: f064da8d-c7cf-495a-925b-295edc93a0e0
+    port: Abort
+  target:
+    id: 4cbdd460-9710-451c-9fda-2ca3805ca175
+    port: in
+- id: 20dc881a-4044-42a1-a0e2-f350c21fb3fc
+  source:
+    id: a01db0c5-d54e-464d-8ec0-f7ed58fcc33f
+    port: out
+  target:
+    id: 8353f12a-2de9-4732-97d2-da747d2920d2
+    port: in
+- id: c30474d9-0fdb-4bac-a70d-3e0fa22d1468
+  source:
+    id: 8353f12a-2de9-4732-97d2-da747d2920d2
+    port: out
+  target:
+    id: d75f82fe-f6af-4368-b0f6-48c2fdb4ddc5
+    port: in
+- id: b244e752-6d4a-412e-8601-ce071b4eb638
+  source:
+    id: d75f82fe-f6af-4368-b0f6-48c2fdb4ddc5
+    port: out
+  target:
+    id: abd0af93-684e-4e77-b975-5a0936d46c50
+    port: in
+- id: 859ace92-bc48-4956-95dc-f2d28cde4b09
+  source:
+    id: abd0af93-684e-4e77-b975-5a0936d46c50
+    port: out
+  target:
+    id: edb30f27-970a-488a-9cfe-7f2c6143a4f5
+    port: in
+- id: 87f46e2b-2b43-489f-b428-c8d079a56de7
+  source:
+    id: edb30f27-970a-488a-9cfe-7f2c6143a4f5
+    port: out
+  target:
+    id: 4cbdd460-9710-451c-9fda-2ca3805ca175
+    port: in
+nodes:
+- id: b6f95185-4bef-440c-ab4b-8a8df210ac0b
+  a_id: c1120cd36e02b18f051ebd75
+  inPorts: []
+  outPorts:
+  - out
+  position:
+    x: 0
+    y: 180
+  stepType: start
+  elementType: START
+  node_number: 1
+- id: 043cc54d-0317-4cea-a0e4-35e05a5b23a2
+  a_id: cb3dc87758895fc54345e6a5
+  actConf:
+    opt_fields: []
+    required_fields: []
+    optSwitch_fields: []
+  actToDo: dynamicGetUser_1
+  inPorts:
+  - in
+  actAsset: ''
+  outPorts:
+  - out
+  position:
+    x: 220
+    y: 165
+  stepType: action
+  actionDesc: ''
+  actionName: dynamicGetUser
+  actionType: Enrichment
+  authorizer: ''
+  breakPoint: false
+  actionTitle: ' Validate User (Azure AD) '
+  node_number: 2
+  actionNameDisplay: Get User
+  cartesian_product: false
+- id: f064da8d-c7cf-495a-925b-295edc93a0e0
+  a_id: c4c5762a97d9fde377a5971c
+  inPorts:
+  - in
+  outPorts:
+  - Contain
+  - Abort
+  position:
+    x: 470
+    y: 170
+  stepType: user-choice
+  actionType: user-choice
+  question: <p>Confirm identity containment for {{params.user_upn}}? This will revoke Azure AD sessions, reset the on-prem AD password, and suspend/re-enable the Google Workspace account.</p>
+  answers:
+  - Contain
+  - Abort
+  authorizer: ''
+  expires: true
+  expiresUnit: hours
+  expiresValue: 14400
+  expiresValueRaw: 4
+  expiresDefault: Abort
+  sendMail: false
+  node_number: 3
+- id: a01db0c5-d54e-464d-8ec0-f7ed58fcc33f
+  a_id: e28f4a8444c4172b1b91ab30
+  actConf:
+    opt_fields: []
+    required_fields: []
+    optSwitch_fields: []
+  actToDo: dynamicRevokeSignInSessions_1
+  inPorts:
+  - in
+  actAsset: ''
+  outPorts:
+  - out
+  position:
+    x: 720
+    y: 60
+  stepType: action
+  actionDesc: ''
+  actionName: dynamicRevokeSignInSessions
+  actionType: Containment
+  authorizer: ''
+  breakPoint: false
+  actionTitle: ' Revoke Azure AD Sessions '
+  node_number: 4
+  actionNameDisplay: Revoke Sign In Sessions
+  cartesian_product: false
+- id: 8353f12a-2de9-4732-97d2-da747d2920d2
+  a_id: eaee4c984c808fdef9831c4a
+  actConf:
+    opt_fields: []
+    required_fields: []
+    optSwitch_fields: []
+  actToDo: dynamicResetPassword_1
+  inPorts:
+  - in
+  actAsset: ''
+  outPorts:
+  - out
+  position:
+    x: 950
+    y: 60
+  stepType: action
+  actionDesc: ''
+  actionName: dynamicResetPassword
+  actionType: Containment
+  authorizer: ''
+  breakPoint: false
+  actionTitle: ' Reset On-Prem AD Password '
+  node_number: 5
+  actionNameDisplay: Reset Password
+  cartesian_product: false
+- id: d75f82fe-f6af-4368-b0f6-48c2fdb4ddc5
+  a_id: 5b084b762b620c70246b0fec
+  actConf:
+    opt_fields: []
+    required_fields: []
+    optSwitch_fields: []
+  actToDo: dynamicSuspendUser_1
+  inPorts:
+  - in
+  actAsset: ''
+  outPorts:
+  - out
+  position:
+    x: 1180
+    y: 60
+  stepType: action
+  actionDesc: ''
+  actionName: dynamicSuspendUser
+  actionType: Containment
+  authorizer: ''
+  breakPoint: false
+  actionTitle: ' Suspend Google Workspace User '
+  node_number: 6
+  actionNameDisplay: Suspend User
+  cartesian_product: false
+- id: abd0af93-684e-4e77-b975-5a0936d46c50
+  a_id: 1a036e341a7e8dc524287c9d
+  actConf:
+    opt_fields: []
+    required_fields: []
+    optSwitch_fields: []
+  actToDo: dynamicEnableUser_1
+  inPorts:
+  - in
+  actAsset: ''
+  outPorts:
+  - out
+  position:
+    x: 1410
+    y: 60
+  stepType: action
+  actionDesc: ''
+  actionName: dynamicEnableUser
+  actionType: Containment
+  authorizer: ''
+  breakPoint: false
+  actionTitle: ' Re-enable Google Workspace User '
+  node_number: 7
+  actionNameDisplay: Enable User
+  cartesian_product: false
+- id: edb30f27-970a-488a-9cfe-7f2c6143a4f5
+  a_id: e2ddeed2fe3032eb777ce11e
+  inPorts:
+  - in
+  outPorts:
+  - out
+  position:
+    x: 1640
+    y: 60
+  stepType: action
+  actionName: task
+  actionType: Task
+  title: ' Document Containment Completion '
+  desc: '<p>Record containment completed for {{params.user_upn}}: Azure AD sessions revoked, on-prem AD password reset (synced to Azure AD and Google Workspace), Google sessions invalidated via suspend/enable. Coordinate secure credential handoff with the user and notify their manager and the IT helpdesk.</p>'
+  dueDate: 1
+  mandatory: false
+  is_automatic: 0
+  customFields:
+    hours: 1
+  node_number: 8
+- id: 4cbdd460-9710-451c-9fda-2ca3805ca175
+  a_id: d19bd9527f8f6d57aae0200c
+  inPorts:
+  - in
+  outPorts: []
+  position:
+    x: 1890
+    y: 180
+  stepType: end
+  elementType: END
+  node_number: 9
+mail_on_error: {}
+previewImage: null
+parent_revision_id: null
+type_id: '{{fd5152df.Type-a5f3298c.Account-Takeover.imslistvalue.yaml|id}}'
+created_by: null
+nested: false
