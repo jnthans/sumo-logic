@@ -71,10 +71,19 @@ export/import format.
 
 ### Import
 
-1. In Sumo Logic, go to **Automation ▸ Playbooks**.
-2. Click the **Import** icon and select the playbook `.json` file.
-   (Some older Cloud SOAR tenants expect the JSON wrapped in a `.zip` — if the
-   import dialog rejects the `.json`, zip it first.)
+The import dialog expects a **ZIP archive containing the playbook JSON** — a
+raw `.json` file is rejected with a wrong-file-extension error (the JSON
+export format is intended for Terraform).
+
+1. Zip the playbook file, e.g.:
+
+   ```sh
+   zip -j Account_Takeover_-_Identity_Containment.zip \
+       automations/playbooks/Account_Takeover_-_Identity_Containment.json
+   ```
+
+2. In Sumo Logic, go to **Automation ▸ Playbooks**.
+3. Click the **Import** icon and select the `.zip` file.
 
 ### Post-import wiring (required)
 
