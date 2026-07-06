@@ -1,0 +1,1565 @@
+[
+    {
+        "model": "automation.playbookpublished",
+        "pk": null,
+        "fields": {
+            "description": "<p>Analyst-initiated account takeover (ATO) identity containment: validate the target user in Azure AD, gate on analyst approval, then revoke Azure AD sign-in sessions, reset the on-prem Active Directory password (synced to Azure AD and Google Workspace), and suspend/re-enable the Google Workspace account to invalidate Google sessions. Finishes with a documentation/handoff task.</p>",
+            "name": "Account Takeover - Identity Containment",
+            "is_deleted": false,
+            "kill_on_error": false,
+            "last_updated": "2026-07-06T00:00:00.000",
+            "links": [
+                {
+                    "z": 10,
+                    "id": "ac543005-1d16-4ab5-ae45-c6a9d97a2cfe",
+                    "type": "link",
+                    "attrs": {
+                        ".marker-target": {
+                            "d": "M 10 0 L 0 5 L 10 10 z"
+                        }
+                    },
+                    "router": {
+                        "name": "manhattan"
+                    },
+                    "source": {
+                        "id": "9a7ec9b1-0493-496a-8f3c-609d776c8450",
+                        "port": "out"
+                    },
+                    "target": {
+                        "id": "22be4130-0251-42b4-878c-59f580d05b9d",
+                        "port": "in"
+                    },
+                    "connector": {
+                        "args": {
+                            "type": "gap"
+                        },
+                        "name": "jumpover"
+                    }
+                },
+                {
+                    "z": 11,
+                    "id": "a5e88829-9740-4244-a182-9d2fbfa5aa82",
+                    "type": "link",
+                    "attrs": {
+                        ".marker-target": {
+                            "d": "M 10 0 L 0 5 L 10 10 z"
+                        }
+                    },
+                    "router": {
+                        "name": "manhattan"
+                    },
+                    "source": {
+                        "id": "22be4130-0251-42b4-878c-59f580d05b9d",
+                        "port": "out"
+                    },
+                    "target": {
+                        "id": "b02f52b9-63a5-4e97-b659-4c6d1e48e379",
+                        "port": "in"
+                    },
+                    "connector": {
+                        "args": {
+                            "type": "gap"
+                        },
+                        "name": "jumpover"
+                    }
+                },
+                {
+                    "z": 12,
+                    "id": "6e3d6dc1-0349-4917-8d68-30bcd06bf978",
+                    "type": "link",
+                    "attrs": {
+                        ".marker-target": {
+                            "d": "M 10 0 L 0 5 L 10 10 z"
+                        }
+                    },
+                    "router": {
+                        "name": "manhattan"
+                    },
+                    "source": {
+                        "id": "b02f52b9-63a5-4e97-b659-4c6d1e48e379",
+                        "port": "Contain"
+                    },
+                    "target": {
+                        "id": "0fa39f53-b288-4dd9-bd46-876ce45d5362",
+                        "port": "in"
+                    },
+                    "connector": {
+                        "args": {
+                            "type": "gap"
+                        },
+                        "name": "jumpover"
+                    }
+                },
+                {
+                    "z": 13,
+                    "id": "7a10c560-62ab-41ce-b1eb-e87d6caee4f2",
+                    "type": "link",
+                    "attrs": {
+                        ".marker-target": {
+                            "d": "M 10 0 L 0 5 L 10 10 z"
+                        }
+                    },
+                    "router": {
+                        "name": "manhattan"
+                    },
+                    "source": {
+                        "id": "b02f52b9-63a5-4e97-b659-4c6d1e48e379",
+                        "port": "Abort"
+                    },
+                    "target": {
+                        "id": "89e87385-568e-4a5e-969d-fa859ef53061",
+                        "port": "in"
+                    },
+                    "connector": {
+                        "args": {
+                            "type": "gap"
+                        },
+                        "name": "jumpover"
+                    }
+                },
+                {
+                    "z": 14,
+                    "id": "41e83d20-53b8-40a6-aaad-370b72c98ac2",
+                    "type": "link",
+                    "attrs": {
+                        ".marker-target": {
+                            "d": "M 10 0 L 0 5 L 10 10 z"
+                        }
+                    },
+                    "router": {
+                        "name": "manhattan"
+                    },
+                    "source": {
+                        "id": "0fa39f53-b288-4dd9-bd46-876ce45d5362",
+                        "port": "out"
+                    },
+                    "target": {
+                        "id": "d27e1949-9367-448a-9c3e-ab3b8ba0da7e",
+                        "port": "in"
+                    },
+                    "connector": {
+                        "args": {
+                            "type": "gap"
+                        },
+                        "name": "jumpover"
+                    }
+                },
+                {
+                    "z": 15,
+                    "id": "dd9dd33f-ae3e-4381-b0cc-8183ae9c613d",
+                    "type": "link",
+                    "attrs": {
+                        ".marker-target": {
+                            "d": "M 10 0 L 0 5 L 10 10 z"
+                        }
+                    },
+                    "router": {
+                        "name": "manhattan"
+                    },
+                    "source": {
+                        "id": "d27e1949-9367-448a-9c3e-ab3b8ba0da7e",
+                        "port": "out"
+                    },
+                    "target": {
+                        "id": "3120b20b-ed96-4bb9-ba59-b77782c6f55b",
+                        "port": "in"
+                    },
+                    "connector": {
+                        "args": {
+                            "type": "gap"
+                        },
+                        "name": "jumpover"
+                    }
+                },
+                {
+                    "z": 16,
+                    "id": "088ae710-54e1-4940-a9d7-c84038badd36",
+                    "type": "link",
+                    "attrs": {
+                        ".marker-target": {
+                            "d": "M 10 0 L 0 5 L 10 10 z"
+                        }
+                    },
+                    "router": {
+                        "name": "manhattan"
+                    },
+                    "source": {
+                        "id": "3120b20b-ed96-4bb9-ba59-b77782c6f55b",
+                        "port": "out"
+                    },
+                    "target": {
+                        "id": "4eaa9c90-1401-4152-aff5-1e7a4a650d2e",
+                        "port": "in"
+                    },
+                    "connector": {
+                        "args": {
+                            "type": "gap"
+                        },
+                        "name": "jumpover"
+                    }
+                },
+                {
+                    "z": 17,
+                    "id": "75f97da7-8056-41aa-bf04-edcb0def037d",
+                    "type": "link",
+                    "attrs": {
+                        ".marker-target": {
+                            "d": "M 10 0 L 0 5 L 10 10 z"
+                        }
+                    },
+                    "router": {
+                        "name": "manhattan"
+                    },
+                    "source": {
+                        "id": "4eaa9c90-1401-4152-aff5-1e7a4a650d2e",
+                        "port": "out"
+                    },
+                    "target": {
+                        "id": "30e2878b-9ed1-44a3-9539-d3e156f6bb6f",
+                        "port": "in"
+                    },
+                    "connector": {
+                        "args": {
+                            "type": "gap"
+                        },
+                        "name": "jumpover"
+                    }
+                },
+                {
+                    "z": 18,
+                    "id": "93b34955-c2ec-4cb5-bcfd-8e12036e4f8a",
+                    "type": "link",
+                    "attrs": {
+                        ".marker-target": {
+                            "d": "M 10 0 L 0 5 L 10 10 z"
+                        }
+                    },
+                    "router": {
+                        "name": "manhattan"
+                    },
+                    "source": {
+                        "id": "30e2878b-9ed1-44a3-9539-d3e156f6bb6f",
+                        "port": "out"
+                    },
+                    "target": {
+                        "id": "89e87385-568e-4a5e-969d-fa859ef53061",
+                        "port": "in"
+                    },
+                    "connector": {
+                        "args": {
+                            "type": "gap"
+                        },
+                        "name": "jumpover"
+                    }
+                }
+            ],
+            "nodes": [
+                {
+                    "z": 1,
+                    "id": "9a7ec9b1-0493-496a-8f3c-609d776c8450",
+                    "a_id": "fc6ba9c34417aebaa292e96f",
+                    "size": {
+                        "width": 50,
+                        "height": 50
+                    },
+                    "type": "devs.Start",
+                    "angle": 0,
+                    "attrs": {
+                        ".title": {
+                            "text": "START"
+                        }
+                    },
+                    "ports": {
+                        "items": [
+                            {
+                                "id": "out",
+                                "attrs": {
+                                    ".port-label": {
+                                        "text": "out"
+                                    }
+                                },
+                                "group": "out"
+                            }
+                        ],
+                        "groups": {
+                            "in": {
+                                "attrs": {
+                                    ".port-body": {
+                                        "r": 10,
+                                        "fill": "#fff",
+                                        "magnet": true,
+                                        "stroke": "#000"
+                                    },
+                                    ".port-label": {
+                                        "fill": "#000"
+                                    }
+                                },
+                                "label": {
+                                    "markup": "<text />",
+                                    "position": {
+                                        "args": {
+                                            "y": 10
+                                        },
+                                        "name": "left"
+                                    }
+                                },
+                                "markup": "<circle r=\"15\" />",
+                                "position": {
+                                    "name": "left"
+                                }
+                            },
+                            "out": {
+                                "z": 0,
+                                "id": "out",
+                                "attrs": {
+                                    "circle": {
+                                        "r": 15,
+                                        "cx": 28,
+                                        "fill": "rgba(255,255,255,0.03)",
+                                        "magnet": "true",
+                                        "stroke-width": 0
+                                    },
+                                    ".port-body": {
+                                        "r": 10,
+                                        "fill": "#fff",
+                                        "magnet": true,
+                                        "stroke": "#000"
+                                    },
+                                    ".port-label": {
+                                        "fill": "#000"
+                                    }
+                                },
+                                "group": "out",
+                                "label": {
+                                    "markup": "<text />",
+                                    "position": {
+                                        "args": {
+                                            "y": 10
+                                        },
+                                        "name": "top"
+                                    }
+                                },
+                                "markup": "<circle r=\"15\" />",
+                                "position": {
+                                    "name": "right"
+                                }
+                            }
+                        }
+                    },
+                    "inPorts": [],
+                    "outPorts": [
+                        "out"
+                    ],
+                    "position": {
+                        "x": 0,
+                        "y": 180
+                    },
+                    "stepType": "start",
+                    "elementType": "START"
+                },
+                {
+                    "z": 2,
+                    "id": "22be4130-0251-42b4-878c-59f580d05b9d",
+                    "a_id": "3131d247bf962444559babfa",
+                    "size": {
+                        "width": 180,
+                        "height": 80
+                    },
+                    "type": "devs.Action",
+                    "angle": 0,
+                    "attrs": {
+                        ".info": {
+                            "text": ""
+                        },
+                        ".title": {
+                            "text": "Enrichment"
+                        },
+                        ".rotatable": {
+                            "data-type": "Enrichment"
+                        },
+                        ".description": {
+                            "text": "Validate User\r\n(Azure AD Get User)"
+                        }
+                    },
+                    "ports": {
+                        "items": [
+                            {
+                                "id": "in",
+                                "attrs": {
+                                    ".port-label": {
+                                        "text": "in"
+                                    }
+                                },
+                                "group": "in"
+                            },
+                            {
+                                "id": "out",
+                                "attrs": {
+                                    ".port-label": {
+                                        "text": "out"
+                                    }
+                                },
+                                "group": "out"
+                            }
+                        ],
+                        "groups": {
+                            "in": {
+                                "z": 0,
+                                "id": "in",
+                                "attrs": {
+                                    "circle": {
+                                        "r": 15,
+                                        "fill": "rgba(255,255,255,0.03)",
+                                        "magnet": "passive",
+                                        "stroke-width": 0
+                                    },
+                                    ".port-body": {
+                                        "r": 10,
+                                        "fill": "#fff",
+                                        "magnet": true,
+                                        "stroke": "#000"
+                                    },
+                                    ".port-label": {
+                                        "fill": "#000"
+                                    }
+                                },
+                                "group": "in",
+                                "label": {
+                                    "markup": "<text />",
+                                    "position": {
+                                        "args": {
+                                            "y": 10
+                                        },
+                                        "name": "top"
+                                    }
+                                },
+                                "markup": "<circle r=\"15\" />",
+                                "position": {
+                                    "args": {
+                                        "x": "0",
+                                        "y": "43"
+                                    },
+                                    "name": "left"
+                                }
+                            },
+                            "out": {
+                                "z": 0,
+                                "id": "out",
+                                "attrs": {
+                                    "circle": {
+                                        "r": 15,
+                                        "fill": "rgba(255,255,255,0.03)",
+                                        "magnet": "true",
+                                        "stroke-width": 0
+                                    },
+                                    ".port-body": {
+                                        "r": 10,
+                                        "fill": "#fff",
+                                        "magnet": true,
+                                        "stroke": "#000"
+                                    },
+                                    ".port-label": {
+                                        "fill": "#000"
+                                    }
+                                },
+                                "group": "out",
+                                "label": {
+                                    "markup": "<text />",
+                                    "position": {
+                                        "args": {
+                                            "y": 10
+                                        },
+                                        "name": "top"
+                                    }
+                                },
+                                "markup": "<circle r=\"15\" />",
+                                "position": {
+                                    "args": {
+                                        "x": "180",
+                                        "y": "43"
+                                    },
+                                    "name": "left"
+                                }
+                            }
+                        }
+                    },
+                    "actConf": {
+                        "opt_fields": [],
+                        "required_fields": [],
+                        "optSwitch_fields": []
+                    },
+                    "actToDo": "dynamicGetUser_1",
+                    "inPorts": [
+                        "in"
+                    ],
+                    "actAsset": "",
+                    "outPorts": [
+                        "out"
+                    ],
+                    "position": {
+                        "x": 220,
+                        "y": 165
+                    },
+                    "stepType": "action",
+                    "actionDesc": "",
+                    "actionName": "dynamicGetUser",
+                    "actionType": "Enrichment",
+                    "authorizer": "",
+                    "breakPoint": false,
+                    "actionTitle": " Get User ",
+                    "actionNameDisplay": "Get User",
+                    "cartesian_product": true
+                },
+                {
+                    "z": 3,
+                    "id": "b02f52b9-63a5-4e97-b659-4c6d1e48e379",
+                    "a_id": "7bfe036c8cc7e8062c0fce8f",
+                    "size": {
+                        "width": 90,
+                        "height": 90
+                    },
+                    "type": "devs.UserChoice",
+                    "angle": 0,
+                    "attrs": {
+                        ".add": {
+                            "ref-x": 42,
+                            "ref-y": 95
+                        },
+                        ".edit": {
+                            "ref-x": 13,
+                            "ref-y": 66
+                        },
+                        ".main": {
+                            "x": 0,
+                            "y": 0,
+                            "width": 135,
+                            "height": 135
+                        },
+                        ".title": {
+                            "ref-x": 13,
+                            "ref-y": 64
+                        },
+                        ".delete": {
+                            "ref-x": 71,
+                            "ref-y": 66
+                        },
+                        ".user-choice-icon": {
+                            "ref-x": 40,
+                            "ref-y": 25,
+                            "data-tooltip": "<p>Confirm identity containment for {{params.user_upn}}? This will revoke Azure AD sessions, reset the on-prem AD password, and suspend/re-enable the Google Workspace account.</p>"
+                        }
+                    },
+                    "ports": {
+                        "items": [
+                            {
+                                "id": "in",
+                                "attrs": {
+                                    ".port-label": {
+                                        "text": "in"
+                                    }
+                                },
+                                "group": "in"
+                            },
+                            {
+                                "id": "Contain",
+                                "attrs": {
+                                    ".port-label": {
+                                        "text": "Contain"
+                                    }
+                                },
+                                "group": "out"
+                            },
+                            {
+                                "id": "Abort",
+                                "attrs": {
+                                    ".port-label": {
+                                        "text": "Abort"
+                                    }
+                                },
+                                "group": "out"
+                            }
+                        ],
+                        "groups": {
+                            "in": {
+                                "z": 0,
+                                "id": "in",
+                                "attrs": {
+                                    "circle": {
+                                        "r": 15,
+                                        "fill": "rgba(255,255,255,0.03)",
+                                        "magnet": "passive",
+                                        "stroke-width": 0
+                                    },
+                                    ".port-body": {
+                                        "r": 10,
+                                        "fill": "#fff",
+                                        "magnet": true,
+                                        "stroke": "#000"
+                                    },
+                                    ".port-label": {
+                                        "fill": "#000"
+                                    }
+                                },
+                                "group": "in",
+                                "label": {
+                                    "markup": "<text />",
+                                    "position": {
+                                        "args": {
+                                            "y": 10
+                                        },
+                                        "name": "top"
+                                    }
+                                },
+                                "markup": "<circle r=\"15\" />",
+                                "position": {
+                                    "args": {
+                                        "x": "2",
+                                        "y": "61"
+                                    },
+                                    "name": "left"
+                                }
+                            },
+                            "out": {
+                                "z": 0,
+                                "id": "out",
+                                "attrs": {
+                                    "circle": {
+                                        "r": 15,
+                                        "fill": "rgba(255,255,255,0.03)",
+                                        "magnet": "true",
+                                        "stroke-width": 0
+                                    },
+                                    ".port-body": {
+                                        "r": 10,
+                                        "fill": "#fff",
+                                        "magnet": true,
+                                        "stroke": "#000"
+                                    },
+                                    ".port-label": {
+                                        "fill": "#000"
+                                    }
+                                },
+                                "group": "out",
+                                "label": {
+                                    "markup": "<text />",
+                                    "position": {
+                                        "args": {
+                                            "y": 10
+                                        },
+                                        "name": "top"
+                                    }
+                                },
+                                "markup": "<circle r=\"15\" />",
+                                "position": {
+                                    "args": {
+                                        "dr": 0,
+                                        "dx": 1,
+                                        "dy": 15,
+                                        "step": 180,
+                                        "startAngle": 0,
+                                        "compensateRotation": false
+                                    },
+                                    "name": "ellipseSpread"
+                                }
+                            }
+                        }
+                    },
+                    "answers": [
+                        "Contain",
+                        "Abort"
+                    ],
+                    "expires": true,
+                    "inPorts": [
+                        "in"
+                    ],
+                    "outPorts": [
+                        "Contain",
+                        "Abort"
+                    ],
+                    "position": {
+                        "x": 470,
+                        "y": 170
+                    },
+                    "question": "<p>Confirm identity containment for {{params.user_upn}}? This will revoke Azure AD sessions, reset the on-prem AD password, and suspend/re-enable the Google Workspace account.</p>",
+                    "stepType": "user-choice",
+                    "actionType": "user-choice",
+                    "authorizer": "",
+                    "expiresUnit": "hours",
+                    "expiresValue": 14400,
+                    "expiresDefault": "Abort",
+                    "expiresValueRaw": 4,
+                    "sendMail": false
+                },
+                {
+                    "z": 4,
+                    "id": "0fa39f53-b288-4dd9-bd46-876ce45d5362",
+                    "a_id": "c87ca7ffa4039bfa090b9b64",
+                    "size": {
+                        "width": 180,
+                        "height": 80
+                    },
+                    "type": "devs.Action",
+                    "angle": 0,
+                    "attrs": {
+                        ".info": {
+                            "text": ""
+                        },
+                        ".title": {
+                            "text": "Containment"
+                        },
+                        ".rotatable": {
+                            "data-type": "Containment"
+                        },
+                        ".description": {
+                            "text": "Revoke Azure AD\r\nSessions"
+                        }
+                    },
+                    "ports": {
+                        "items": [
+                            {
+                                "id": "in",
+                                "attrs": {
+                                    ".port-label": {
+                                        "text": "in"
+                                    }
+                                },
+                                "group": "in"
+                            },
+                            {
+                                "id": "out",
+                                "attrs": {
+                                    ".port-label": {
+                                        "text": "out"
+                                    }
+                                },
+                                "group": "out"
+                            }
+                        ],
+                        "groups": {
+                            "in": {
+                                "z": 0,
+                                "id": "in",
+                                "attrs": {
+                                    "circle": {
+                                        "r": 15,
+                                        "fill": "rgba(255,255,255,0.03)",
+                                        "magnet": "passive",
+                                        "stroke-width": 0
+                                    },
+                                    ".port-body": {
+                                        "r": 10,
+                                        "fill": "#fff",
+                                        "magnet": true,
+                                        "stroke": "#000"
+                                    },
+                                    ".port-label": {
+                                        "fill": "#000"
+                                    }
+                                },
+                                "group": "in",
+                                "label": {
+                                    "markup": "<text />",
+                                    "position": {
+                                        "args": {
+                                            "y": 10
+                                        },
+                                        "name": "top"
+                                    }
+                                },
+                                "markup": "<circle r=\"15\" />",
+                                "position": {
+                                    "args": {
+                                        "x": "0",
+                                        "y": "43"
+                                    },
+                                    "name": "left"
+                                }
+                            },
+                            "out": {
+                                "z": 0,
+                                "id": "out",
+                                "attrs": {
+                                    "circle": {
+                                        "r": 15,
+                                        "fill": "rgba(255,255,255,0.03)",
+                                        "magnet": "true",
+                                        "stroke-width": 0
+                                    },
+                                    ".port-body": {
+                                        "r": 10,
+                                        "fill": "#fff",
+                                        "magnet": true,
+                                        "stroke": "#000"
+                                    },
+                                    ".port-label": {
+                                        "fill": "#000"
+                                    }
+                                },
+                                "group": "out",
+                                "label": {
+                                    "markup": "<text />",
+                                    "position": {
+                                        "args": {
+                                            "y": 10
+                                        },
+                                        "name": "top"
+                                    }
+                                },
+                                "markup": "<circle r=\"15\" />",
+                                "position": {
+                                    "args": {
+                                        "x": "180",
+                                        "y": "43"
+                                    },
+                                    "name": "left"
+                                }
+                            }
+                        }
+                    },
+                    "actConf": {
+                        "opt_fields": [],
+                        "required_fields": [],
+                        "optSwitch_fields": []
+                    },
+                    "actToDo": "dynamicRevokeSignInSessions_1",
+                    "inPorts": [
+                        "in"
+                    ],
+                    "actAsset": "",
+                    "outPorts": [
+                        "out"
+                    ],
+                    "position": {
+                        "x": 720,
+                        "y": 60
+                    },
+                    "stepType": "action",
+                    "actionDesc": "",
+                    "actionName": "dynamicRevokeSignInSessions",
+                    "actionType": "Containment",
+                    "authorizer": "",
+                    "breakPoint": false,
+                    "actionTitle": " Revoke Sign In Sessions ",
+                    "actionNameDisplay": "Revoke Sign In Sessions",
+                    "cartesian_product": true
+                },
+                {
+                    "z": 5,
+                    "id": "d27e1949-9367-448a-9c3e-ab3b8ba0da7e",
+                    "a_id": "5f1d353168ac159731ba41e7",
+                    "size": {
+                        "width": 180,
+                        "height": 80
+                    },
+                    "type": "devs.Action",
+                    "angle": 0,
+                    "attrs": {
+                        ".info": {
+                            "text": ""
+                        },
+                        ".title": {
+                            "text": "Containment"
+                        },
+                        ".rotatable": {
+                            "data-type": "Containment"
+                        },
+                        ".description": {
+                            "text": "Reset On-Prem AD\r\nPassword (AD V2)"
+                        }
+                    },
+                    "ports": {
+                        "items": [
+                            {
+                                "id": "in",
+                                "attrs": {
+                                    ".port-label": {
+                                        "text": "in"
+                                    }
+                                },
+                                "group": "in"
+                            },
+                            {
+                                "id": "out",
+                                "attrs": {
+                                    ".port-label": {
+                                        "text": "out"
+                                    }
+                                },
+                                "group": "out"
+                            }
+                        ],
+                        "groups": {
+                            "in": {
+                                "z": 0,
+                                "id": "in",
+                                "attrs": {
+                                    "circle": {
+                                        "r": 15,
+                                        "fill": "rgba(255,255,255,0.03)",
+                                        "magnet": "passive",
+                                        "stroke-width": 0
+                                    },
+                                    ".port-body": {
+                                        "r": 10,
+                                        "fill": "#fff",
+                                        "magnet": true,
+                                        "stroke": "#000"
+                                    },
+                                    ".port-label": {
+                                        "fill": "#000"
+                                    }
+                                },
+                                "group": "in",
+                                "label": {
+                                    "markup": "<text />",
+                                    "position": {
+                                        "args": {
+                                            "y": 10
+                                        },
+                                        "name": "top"
+                                    }
+                                },
+                                "markup": "<circle r=\"15\" />",
+                                "position": {
+                                    "args": {
+                                        "x": "0",
+                                        "y": "43"
+                                    },
+                                    "name": "left"
+                                }
+                            },
+                            "out": {
+                                "z": 0,
+                                "id": "out",
+                                "attrs": {
+                                    "circle": {
+                                        "r": 15,
+                                        "fill": "rgba(255,255,255,0.03)",
+                                        "magnet": "true",
+                                        "stroke-width": 0
+                                    },
+                                    ".port-body": {
+                                        "r": 10,
+                                        "fill": "#fff",
+                                        "magnet": true,
+                                        "stroke": "#000"
+                                    },
+                                    ".port-label": {
+                                        "fill": "#000"
+                                    }
+                                },
+                                "group": "out",
+                                "label": {
+                                    "markup": "<text />",
+                                    "position": {
+                                        "args": {
+                                            "y": 10
+                                        },
+                                        "name": "top"
+                                    }
+                                },
+                                "markup": "<circle r=\"15\" />",
+                                "position": {
+                                    "args": {
+                                        "x": "180",
+                                        "y": "43"
+                                    },
+                                    "name": "left"
+                                }
+                            }
+                        }
+                    },
+                    "actConf": {
+                        "opt_fields": [],
+                        "required_fields": [],
+                        "optSwitch_fields": []
+                    },
+                    "actToDo": "dynamicResetPassword_1",
+                    "inPorts": [
+                        "in"
+                    ],
+                    "actAsset": "",
+                    "outPorts": [
+                        "out"
+                    ],
+                    "position": {
+                        "x": 950,
+                        "y": 60
+                    },
+                    "stepType": "action",
+                    "actionDesc": "",
+                    "actionName": "dynamicResetPassword",
+                    "actionType": "Containment",
+                    "authorizer": "",
+                    "breakPoint": false,
+                    "actionTitle": " Reset Password ",
+                    "actionNameDisplay": "Reset Password",
+                    "cartesian_product": true
+                },
+                {
+                    "z": 6,
+                    "id": "3120b20b-ed96-4bb9-ba59-b77782c6f55b",
+                    "a_id": "aa137a91565f40e65e9be588",
+                    "size": {
+                        "width": 180,
+                        "height": 80
+                    },
+                    "type": "devs.Action",
+                    "angle": 0,
+                    "attrs": {
+                        ".info": {
+                            "text": ""
+                        },
+                        ".title": {
+                            "text": "Containment"
+                        },
+                        ".rotatable": {
+                            "data-type": "Containment"
+                        },
+                        ".description": {
+                            "text": "Suspend Google\r\nWorkspace User"
+                        }
+                    },
+                    "ports": {
+                        "items": [
+                            {
+                                "id": "in",
+                                "attrs": {
+                                    ".port-label": {
+                                        "text": "in"
+                                    }
+                                },
+                                "group": "in"
+                            },
+                            {
+                                "id": "out",
+                                "attrs": {
+                                    ".port-label": {
+                                        "text": "out"
+                                    }
+                                },
+                                "group": "out"
+                            }
+                        ],
+                        "groups": {
+                            "in": {
+                                "z": 0,
+                                "id": "in",
+                                "attrs": {
+                                    "circle": {
+                                        "r": 15,
+                                        "fill": "rgba(255,255,255,0.03)",
+                                        "magnet": "passive",
+                                        "stroke-width": 0
+                                    },
+                                    ".port-body": {
+                                        "r": 10,
+                                        "fill": "#fff",
+                                        "magnet": true,
+                                        "stroke": "#000"
+                                    },
+                                    ".port-label": {
+                                        "fill": "#000"
+                                    }
+                                },
+                                "group": "in",
+                                "label": {
+                                    "markup": "<text />",
+                                    "position": {
+                                        "args": {
+                                            "y": 10
+                                        },
+                                        "name": "top"
+                                    }
+                                },
+                                "markup": "<circle r=\"15\" />",
+                                "position": {
+                                    "args": {
+                                        "x": "0",
+                                        "y": "43"
+                                    },
+                                    "name": "left"
+                                }
+                            },
+                            "out": {
+                                "z": 0,
+                                "id": "out",
+                                "attrs": {
+                                    "circle": {
+                                        "r": 15,
+                                        "fill": "rgba(255,255,255,0.03)",
+                                        "magnet": "true",
+                                        "stroke-width": 0
+                                    },
+                                    ".port-body": {
+                                        "r": 10,
+                                        "fill": "#fff",
+                                        "magnet": true,
+                                        "stroke": "#000"
+                                    },
+                                    ".port-label": {
+                                        "fill": "#000"
+                                    }
+                                },
+                                "group": "out",
+                                "label": {
+                                    "markup": "<text />",
+                                    "position": {
+                                        "args": {
+                                            "y": 10
+                                        },
+                                        "name": "top"
+                                    }
+                                },
+                                "markup": "<circle r=\"15\" />",
+                                "position": {
+                                    "args": {
+                                        "x": "180",
+                                        "y": "43"
+                                    },
+                                    "name": "left"
+                                }
+                            }
+                        }
+                    },
+                    "actConf": {
+                        "opt_fields": [],
+                        "required_fields": [],
+                        "optSwitch_fields": []
+                    },
+                    "actToDo": "dynamicSuspendUser_1",
+                    "inPorts": [
+                        "in"
+                    ],
+                    "actAsset": "",
+                    "outPorts": [
+                        "out"
+                    ],
+                    "position": {
+                        "x": 1180,
+                        "y": 60
+                    },
+                    "stepType": "action",
+                    "actionDesc": "",
+                    "actionName": "dynamicSuspendUser",
+                    "actionType": "Containment",
+                    "authorizer": "",
+                    "breakPoint": false,
+                    "actionTitle": " Suspend User ",
+                    "actionNameDisplay": "Suspend User",
+                    "cartesian_product": true
+                },
+                {
+                    "z": 7,
+                    "id": "4eaa9c90-1401-4152-aff5-1e7a4a650d2e",
+                    "a_id": "0dfedfba3c442945142e20a1",
+                    "size": {
+                        "width": 180,
+                        "height": 80
+                    },
+                    "type": "devs.Action",
+                    "angle": 0,
+                    "attrs": {
+                        ".info": {
+                            "text": ""
+                        },
+                        ".title": {
+                            "text": "Containment"
+                        },
+                        ".rotatable": {
+                            "data-type": "Containment"
+                        },
+                        ".description": {
+                            "text": "Re-enable Google\r\nWorkspace User"
+                        }
+                    },
+                    "ports": {
+                        "items": [
+                            {
+                                "id": "in",
+                                "attrs": {
+                                    ".port-label": {
+                                        "text": "in"
+                                    }
+                                },
+                                "group": "in"
+                            },
+                            {
+                                "id": "out",
+                                "attrs": {
+                                    ".port-label": {
+                                        "text": "out"
+                                    }
+                                },
+                                "group": "out"
+                            }
+                        ],
+                        "groups": {
+                            "in": {
+                                "z": 0,
+                                "id": "in",
+                                "attrs": {
+                                    "circle": {
+                                        "r": 15,
+                                        "fill": "rgba(255,255,255,0.03)",
+                                        "magnet": "passive",
+                                        "stroke-width": 0
+                                    },
+                                    ".port-body": {
+                                        "r": 10,
+                                        "fill": "#fff",
+                                        "magnet": true,
+                                        "stroke": "#000"
+                                    },
+                                    ".port-label": {
+                                        "fill": "#000"
+                                    }
+                                },
+                                "group": "in",
+                                "label": {
+                                    "markup": "<text />",
+                                    "position": {
+                                        "args": {
+                                            "y": 10
+                                        },
+                                        "name": "top"
+                                    }
+                                },
+                                "markup": "<circle r=\"15\" />",
+                                "position": {
+                                    "args": {
+                                        "x": "0",
+                                        "y": "43"
+                                    },
+                                    "name": "left"
+                                }
+                            },
+                            "out": {
+                                "z": 0,
+                                "id": "out",
+                                "attrs": {
+                                    "circle": {
+                                        "r": 15,
+                                        "fill": "rgba(255,255,255,0.03)",
+                                        "magnet": "true",
+                                        "stroke-width": 0
+                                    },
+                                    ".port-body": {
+                                        "r": 10,
+                                        "fill": "#fff",
+                                        "magnet": true,
+                                        "stroke": "#000"
+                                    },
+                                    ".port-label": {
+                                        "fill": "#000"
+                                    }
+                                },
+                                "group": "out",
+                                "label": {
+                                    "markup": "<text />",
+                                    "position": {
+                                        "args": {
+                                            "y": 10
+                                        },
+                                        "name": "top"
+                                    }
+                                },
+                                "markup": "<circle r=\"15\" />",
+                                "position": {
+                                    "args": {
+                                        "x": "180",
+                                        "y": "43"
+                                    },
+                                    "name": "left"
+                                }
+                            }
+                        }
+                    },
+                    "actConf": {
+                        "opt_fields": [],
+                        "required_fields": [],
+                        "optSwitch_fields": []
+                    },
+                    "actToDo": "dynamicEnableUser_1",
+                    "inPorts": [
+                        "in"
+                    ],
+                    "actAsset": "",
+                    "outPorts": [
+                        "out"
+                    ],
+                    "position": {
+                        "x": 1410,
+                        "y": 60
+                    },
+                    "stepType": "action",
+                    "actionDesc": "",
+                    "actionName": "dynamicEnableUser",
+                    "actionType": "Containment",
+                    "authorizer": "",
+                    "breakPoint": false,
+                    "actionTitle": " Enable User ",
+                    "actionNameDisplay": "Enable User",
+                    "cartesian_product": true
+                },
+                {
+                    "z": 8,
+                    "id": "30e2878b-9ed1-44a3-9539-d3e156f6bb6f",
+                    "a_id": "cd92542a72d6d9e8565b0282",
+                    "desc": "<p>Record containment completed for {{params.user_upn}}: Azure AD sessions revoked, on-prem AD password reset (synced to Azure AD and Google Workspace), Google sessions invalidated via suspend/enable. Coordinate secure credential handoff with the user and notify their manager and the IT helpdesk.</p>",
+                    "size": {
+                        "width": 180,
+                        "height": 80
+                    },
+                    "type": "devs.Action",
+                    "angle": 0,
+                    "attrs": {
+                        ".info": {
+                            "text": ""
+                        },
+                        ".title": {
+                            "text": "Task"
+                        },
+                        ".rotatable": {
+                            "data-type": "Task"
+                        },
+                        ".description": {
+                            "text": "Document Containment\r\nCompletion"
+                        }
+                    },
+                    "ports": {
+                        "items": [
+                            {
+                                "id": "in",
+                                "attrs": {
+                                    ".port-label": {
+                                        "text": "in"
+                                    }
+                                },
+                                "group": "in"
+                            },
+                            {
+                                "id": "out",
+                                "attrs": {
+                                    ".port-label": {
+                                        "text": "out"
+                                    }
+                                },
+                                "group": "out"
+                            }
+                        ],
+                        "groups": {
+                            "in": {
+                                "z": 0,
+                                "id": "in",
+                                "attrs": {
+                                    "circle": {
+                                        "r": 15,
+                                        "fill": "rgba(255,255,255,0.03)",
+                                        "magnet": "passive",
+                                        "stroke-width": 0
+                                    },
+                                    ".port-body": {
+                                        "r": 10,
+                                        "fill": "#fff",
+                                        "magnet": true,
+                                        "stroke": "#000"
+                                    },
+                                    ".port-label": {
+                                        "fill": "#000"
+                                    }
+                                },
+                                "group": "in",
+                                "label": {
+                                    "markup": "<text />",
+                                    "position": {
+                                        "args": {
+                                            "y": 10
+                                        },
+                                        "name": "top"
+                                    }
+                                },
+                                "markup": "<circle r=\"15\" />",
+                                "position": {
+                                    "args": {
+                                        "x": "0",
+                                        "y": "43"
+                                    },
+                                    "name": "left"
+                                }
+                            },
+                            "out": {
+                                "z": 0,
+                                "id": "out",
+                                "attrs": {
+                                    "circle": {
+                                        "r": 15,
+                                        "fill": "rgba(255,255,255,0.03)",
+                                        "magnet": "true",
+                                        "stroke-width": 0
+                                    },
+                                    ".port-body": {
+                                        "r": 10,
+                                        "fill": "#fff",
+                                        "magnet": true,
+                                        "stroke": "#000"
+                                    },
+                                    ".port-label": {
+                                        "fill": "#000"
+                                    }
+                                },
+                                "group": "out",
+                                "label": {
+                                    "markup": "<text />",
+                                    "position": {
+                                        "args": {
+                                            "y": 10
+                                        },
+                                        "name": "top"
+                                    }
+                                },
+                                "markup": "<circle r=\"15\" />",
+                                "position": {
+                                    "args": {
+                                        "x": "180",
+                                        "y": "43"
+                                    },
+                                    "name": "left"
+                                }
+                            }
+                        }
+                    },
+                    "title": " Document Containment Completion ",
+                    "dueDate": 1,
+                    "inPorts": [
+                        "in"
+                    ],
+                    "outPorts": [
+                        "out"
+                    ],
+                    "position": {
+                        "x": 1640,
+                        "y": 60
+                    },
+                    "stepType": "action",
+                    "mandatory": false,
+                    "actionName": "task",
+                    "actionType": "Task",
+                    "customFields": {
+                        "hours": 1
+                    },
+                    "is_automatic": 0
+                },
+                {
+                    "z": 9,
+                    "id": "89e87385-568e-4a5e-969d-fa859ef53061",
+                    "a_id": "2226948c10f9024176ae8ec1",
+                    "size": {
+                        "width": 50,
+                        "height": 50
+                    },
+                    "type": "devs.End",
+                    "angle": 0,
+                    "attrs": {
+                        ".title": {
+                            "text": "END"
+                        }
+                    },
+                    "ports": {
+                        "items": [
+                            {
+                                "id": "in",
+                                "attrs": {
+                                    ".port-label": {
+                                        "text": "in"
+                                    }
+                                },
+                                "group": "in"
+                            }
+                        ],
+                        "groups": {
+                            "in": {
+                                "z": 0,
+                                "id": "in",
+                                "attrs": {
+                                    "circle": {
+                                        "r": 15,
+                                        "fill": "rgba(255,255,255,0.03)",
+                                        "magnet": "passive",
+                                        "stroke-width": 0
+                                    },
+                                    ".port-body": {
+                                        "r": 10,
+                                        "fill": "#fff",
+                                        "magnet": true,
+                                        "stroke": "#000"
+                                    },
+                                    ".port-label": {
+                                        "fill": "#000"
+                                    }
+                                },
+                                "group": "in",
+                                "label": {
+                                    "markup": "<text />",
+                                    "position": {
+                                        "args": {
+                                            "y": 10
+                                        },
+                                        "name": "top"
+                                    }
+                                },
+                                "markup": "<circle r=\"15\" />",
+                                "position": {
+                                    "name": "left"
+                                }
+                            },
+                            "out": {
+                                "attrs": {
+                                    ".port-body": {
+                                        "r": 10,
+                                        "fill": "#fff",
+                                        "magnet": true,
+                                        "stroke": "#000"
+                                    },
+                                    ".port-label": {
+                                        "fill": "#000"
+                                    }
+                                },
+                                "label": {
+                                    "markup": "<text />",
+                                    "position": {
+                                        "args": {
+                                            "y": 10
+                                        },
+                                        "name": "right"
+                                    }
+                                },
+                                "markup": "<circle r=\"15\" />",
+                                "position": {
+                                    "name": "right"
+                                }
+                            }
+                        }
+                    },
+                    "inPorts": [
+                        "in"
+                    ],
+                    "outPorts": [],
+                    "position": {
+                        "x": 1890,
+                        "y": 180
+                    },
+                    "stepType": "end",
+                    "elementType": "END"
+                }
+            ],
+            "mail_on_error": {},
+            "previewImage": null,
+            "parent_revision_id": null,
+            "type": null,
+            "created_by": null,
+            "nested": false,
+            "type_label": "Account Takeover"
+        }
+    }
+]
