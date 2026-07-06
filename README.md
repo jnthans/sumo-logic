@@ -71,19 +71,34 @@ export/import format.
 
 ### Import
 
-The import dialog expects a **ZIP archive containing the playbook JSON** — a
-raw `.json` file is rejected with a wrong-file-extension error (the JSON
-export format is intended for Terraform).
+The import dialog rejects raw `.json` files — that export format is intended
+for Terraform (`sumologic_csoar_playbook`). It expects an archive. Sumo
+Logic's own shareable playbooks ([sumologic-content](https://github.com/SumoLogic/sumologic-content/tree/master/CloudSOAR/Playbooks))
+ship as a **ZIP containing a single file named exactly `playbook_to_import.json`**:
 
-1. Zip the playbook file, e.g.:
+1. Package the playbook (note the required inner file name):
 
    ```sh
-   zip -j Account_Takeover_-_Identity_Containment.zip \
-       automations/playbooks/Account_Takeover_-_Identity_Containment.json
+   cp automations/playbooks/Account_Takeover_-_Identity_Containment.json \
+      playbook_to_import.json
+   zip Account_Takeover_-_Identity_Containment.zip playbook_to_import.json
    ```
 
 2. In Sumo Logic, go to **Automation ▸ Playbooks**.
 3. Click the **Import** icon and select the `.zip` file.
+
+If your tenant's import instead expects the newer **Export All (ZIP Format)**
+bundle — a `tar.gz` whose inner files are named
+`<unique_id>.<name>.<file_type>.<extension>` (see the
+[playbook docs](https://www.sumologic.com/help/docs/platform-services/automation-service/playbooks/create-playbooks/#export-and-import-playbooks)) —
+package it as:
+
+```sh
+cp automations/playbooks/Account_Takeover_-_Identity_Containment.json \
+   ab12cd34.Account-Takeover-Identity-Containment.playbook.json
+tar -czf Account_Takeover_-_Identity_Containment.tar.gz \
+   ab12cd34.Account-Takeover-Identity-Containment.playbook.json
+```
 
 ### Post-import wiring (required)
 

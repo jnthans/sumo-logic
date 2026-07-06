@@ -1,8 +1,10 @@
 # macOS
 .DS_Store
 
-# Locally built playbook import archives (zip the JSON yourself; see README)
+# Locally built playbook import archives (package the JSON yourself; see README)
 *.zip
+*.tar.gz
+playbook_to_import.json
 
 # Editor
 .vscode/
