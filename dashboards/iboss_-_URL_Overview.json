@@ -1,0 +1,602 @@
+{
+    "type": "DashboardV2SyncDefinition",
+    "name": "iboss - URL Overview",
+    "description": "Overview of iBoss web gateway URL logs: request volume, allowed vs blocked traffic, categories, users, bandwidth, and malware/C2 flags. Set the sourceCategory variable to the _sourceCategory of your iBoss URL logs.",
+    "title": "iboss - URL Overview",
+    "theme": "Light",
+    "topologyLabelMap": {
+        "data": {}
+    },
+    "refreshInterval": 300,
+    "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+        },
+        "to": null
+    },
+    "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+            {
+                "key": "kpi-total-requests",
+                "structure": "{\"height\":4,\"width\":4,\"x\":0,\"y\":0}"
+            },
+            {
+                "key": "kpi-allowed",
+                "structure": "{\"height\":4,\"width\":4,\"x\":4,\"y\":0}"
+            },
+            {
+                "key": "kpi-blocked",
+                "structure": "{\"height\":4,\"width\":4,\"x\":8,\"y\":0}"
+            },
+            {
+                "key": "kpi-unique-users",
+                "structure": "{\"height\":4,\"width\":4,\"x\":12,\"y\":0}"
+            },
+            {
+                "key": "kpi-bandwidth",
+                "structure": "{\"height\":4,\"width\":4,\"x\":16,\"y\":0}"
+            },
+            {
+                "key": "kpi-malware",
+                "structure": "{\"height\":4,\"width\":4,\"x\":20,\"y\":0}"
+            },
+            {
+                "key": "trend-requests-by-action",
+                "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":4}"
+            },
+            {
+                "key": "trend-bandwidth",
+                "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":4}"
+            },
+            {
+                "key": "top-categories",
+                "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":10}"
+            },
+            {
+                "key": "top-hosts",
+                "structure": "{\"height\":6,\"width\":8,\"x\":8,\"y\":10}"
+            },
+            {
+                "key": "top-users",
+                "structure": "{\"height\":6,\"width\":8,\"x\":16,\"y\":10}"
+            },
+            {
+                "key": "blocked-by-category",
+                "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":16}"
+            },
+            {
+                "key": "response-codes",
+                "structure": "{\"height\":6,\"width\":8,\"x\":8,\"y\":16}"
+            },
+            {
+                "key": "top-bandwidth-users",
+                "structure": "{\"height\":6,\"width\":8,\"x\":16,\"y\":16}"
+            },
+            {
+                "key": "requests-by-location",
+                "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":22}"
+            },
+            {
+                "key": "top-applications",
+                "structure": "{\"height\":6,\"width\":8,\"x\":8,\"y\":22}"
+            },
+            {
+                "key": "top-source-ips",
+                "structure": "{\"height\":6,\"width\":8,\"x\":16,\"y\":22}"
+            },
+            {
+                "key": "recent-blocked",
+                "structure": "{\"height\":8,\"width\":24,\"x\":0,\"y\":28}"
+            }
+        ]
+    },
+    "panels": [
+        {
+            "id": null,
+            "key": "kpi-total-requests",
+            "title": "Total Requests",
+            "visualSettings": "{\"general\": {\"mode\": \"singleValueMetrics\", \"type\": \"svp\", \"displayType\": \"default\"}, \"svp\": {\"option\": \"Latest\", \"hideData\": false, \"hideLabel\": false, \"label\": \"Requests\", \"useBackgroundColor\": false, \"useNoData\": true, \"noDataString\": \"0\", \"rounding\": 2, \"thresholds\": []}, \"title\": {\"fontSize\": 14}}",
+            "keepVisualSettingsConsistentWithParent": true,
+            "panelType": "SumoSearchPanel",
+            "queries": [
+                {
+                    "transient": false,
+                    "queryString": "_sourceCategory={{sourceCategory}} \"WEB_LOG\"\n| json field=_raw \"event.logType\" as log_type\n| where log_type = \"WEB_LOG\"\n| count as requests",
+                    "queryType": "Logs",
+                    "queryKey": "A",
+                    "metricsQueryMode": null,
+                    "metricsQueryData": null,
+                    "tracesQueryData": null,
+                    "spansQueryData": null,
+                    "parseMode": "Manual",
+                    "timeSource": "Message",
+                    "outputCardinalityLimit": 1000
+                }
+            ],
+            "description": "",
+            "timeRange": null,
+            "coloringRules": null,
+            "linkedDashboards": []
+        },
+        {
+            "id": null,
+            "key": "kpi-allowed",
+            "title": "Allowed",
+            "visualSettings": "{\"general\": {\"mode\": \"singleValueMetrics\", \"type\": \"svp\", \"displayType\": \"default\"}, \"svp\": {\"option\": \"Latest\", \"hideData\": false, \"hideLabel\": false, \"label\": \"Allowed\", \"useBackgroundColor\": false, \"useNoData\": true, \"noDataString\": \"0\", \"rounding\": 2, \"thresholds\": []}, \"title\": {\"fontSize\": 14}}",
+            "keepVisualSettingsConsistentWithParent": true,
+            "panelType": "SumoSearchPanel",
+            "queries": [
+                {
+                    "transient": false,
+                    "queryString": "_sourceCategory={{sourceCategory}} \"WEB_LOG\"\n| json field=_raw \"event.action\" as action\n| where action = \"Allowed\"\n| count as allowed",
+                    "queryType": "Logs",
+                    "queryKey": "A",
+                    "metricsQueryMode": null,
+                    "metricsQueryData": null,
+                    "tracesQueryData": null,
+                    "spansQueryData": null,
+                    "parseMode": "Manual",
+                    "timeSource": "Message",
+                    "outputCardinalityLimit": 1000
+                }
+            ],
+            "description": "",
+            "timeRange": null,
+            "coloringRules": null,
+            "linkedDashboards": []
+        },
+        {
+            "id": null,
+            "key": "kpi-blocked",
+            "title": "Blocked / Not Allowed",
+            "visualSettings": "{\"general\": {\"mode\": \"singleValueMetrics\", \"type\": \"svp\", \"displayType\": \"default\"}, \"svp\": {\"option\": \"Latest\", \"hideData\": false, \"hideLabel\": false, \"label\": \"Blocked\", \"useBackgroundColor\": false, \"useNoData\": true, \"noDataString\": \"0\", \"rounding\": 2, \"thresholds\": []}, \"title\": {\"fontSize\": 14}}",
+            "keepVisualSettingsConsistentWithParent": true,
+            "panelType": "SumoSearchPanel",
+            "queries": [
+                {
+                    "transient": false,
+                    "queryString": "_sourceCategory={{sourceCategory}} \"WEB_LOG\"\n| json field=_raw \"event.action\" as action\n| where action != \"Allowed\"\n| count as blocked",
+                    "queryType": "Logs",
+                    "queryKey": "A",
+                    "metricsQueryMode": null,
+                    "metricsQueryData": null,
+                    "tracesQueryData": null,
+                    "spansQueryData": null,
+                    "parseMode": "Manual",
+                    "timeSource": "Message",
+                    "outputCardinalityLimit": 1000
+                }
+            ],
+            "description": "",
+            "timeRange": null,
+            "coloringRules": null,
+            "linkedDashboards": []
+        },
+        {
+            "id": null,
+            "key": "kpi-unique-users",
+            "title": "Unique Users",
+            "visualSettings": "{\"general\": {\"mode\": \"singleValueMetrics\", \"type\": \"svp\", \"displayType\": \"default\"}, \"svp\": {\"option\": \"Latest\", \"hideData\": false, \"hideLabel\": false, \"label\": \"Users\", \"useBackgroundColor\": false, \"useNoData\": true, \"noDataString\": \"0\", \"rounding\": 2, \"thresholds\": []}, \"title\": {\"fontSize\": 14}}",
+            "keepVisualSettingsConsistentWithParent": true,
+            "panelType": "SumoSearchPanel",
+            "queries": [
+                {
+                    "transient": false,
+                    "queryString": "_sourceCategory={{sourceCategory}} \"WEB_LOG\"\n| json field=_raw \"event.username\" as username\n| where username != \"-\"\n| count_distinct(username) as users",
+                    "queryType": "Logs",
+                    "queryKey": "A",
+                    "metricsQueryMode": null,
+                    "metricsQueryData": null,
+                    "tracesQueryData": null,
+                    "spansQueryData": null,
+                    "parseMode": "Manual",
+                    "timeSource": "Message",
+                    "outputCardinalityLimit": 1000
+                }
+            ],
+            "description": "",
+            "timeRange": null,
+            "coloringRules": null,
+            "linkedDashboards": []
+        },
+        {
+            "id": null,
+            "key": "kpi-bandwidth",
+            "title": "Total Bandwidth (GB)",
+            "visualSettings": "{\"general\": {\"mode\": \"singleValueMetrics\", \"type\": \"svp\", \"displayType\": \"default\"}, \"svp\": {\"option\": \"Latest\", \"hideData\": false, \"hideLabel\": false, \"label\": \"GB\", \"useBackgroundColor\": false, \"useNoData\": true, \"noDataString\": \"0\", \"rounding\": 2, \"thresholds\": []}, \"title\": {\"fontSize\": 14}}",
+            "keepVisualSettingsConsistentWithParent": true,
+            "panelType": "SumoSearchPanel",
+            "queries": [
+                {
+                    "transient": false,
+                    "queryString": "_sourceCategory={{sourceCategory}} \"WEB_LOG\"\n| json field=_raw \"event.totalByteCount\" as bytes\n| bytes * 1 as bytes\n| sum(bytes) as total_bytes\n| round(total_bytes / 1073741824 * 100) / 100 as gb\n| fields gb",
+                    "queryType": "Logs",
+                    "queryKey": "A",
+                    "metricsQueryMode": null,
+                    "metricsQueryData": null,
+                    "tracesQueryData": null,
+                    "spansQueryData": null,
+                    "parseMode": "Manual",
+                    "timeSource": "Message",
+                    "outputCardinalityLimit": 1000
+                }
+            ],
+            "description": "",
+            "timeRange": null,
+            "coloringRules": null,
+            "linkedDashboards": []
+        },
+        {
+            "id": null,
+            "key": "kpi-malware",
+            "title": "Malware / C2 Flagged",
+            "visualSettings": "{\"general\": {\"mode\": \"singleValueMetrics\", \"type\": \"svp\", \"displayType\": \"default\"}, \"svp\": {\"option\": \"Latest\", \"hideData\": false, \"hideLabel\": false, \"label\": \"Flagged\", \"useBackgroundColor\": false, \"useNoData\": true, \"noDataString\": \"0\", \"rounding\": 2, \"thresholds\": []}, \"title\": {\"fontSize\": 14}}",
+            "keepVisualSettingsConsistentWithParent": true,
+            "panelType": "SumoSearchPanel",
+            "queries": [
+                {
+                    "transient": false,
+                    "queryString": "_sourceCategory={{sourceCategory}} \"WEB_LOG\"\n| json field=_raw \"event.malware\", \"event.cncFlag\" as malware, cnc_flag\n| where malware != \"0\" or cnc_flag != \"0\"\n| count as flagged",
+                    "queryType": "Logs",
+                    "queryKey": "A",
+                    "metricsQueryMode": null,
+                    "metricsQueryData": null,
+                    "tracesQueryData": null,
+                    "spansQueryData": null,
+                    "parseMode": "Manual",
+                    "timeSource": "Message",
+                    "outputCardinalityLimit": 1000
+                }
+            ],
+            "description": "Events where iBoss set the malware or command-and-control flag.",
+            "timeRange": null,
+            "coloringRules": null,
+            "linkedDashboards": []
+        },
+        {
+            "id": null,
+            "key": "trend-requests-by-action",
+            "title": "Requests Over Time by Action",
+            "visualSettings": "{\"general\": {\"mode\": \"timeSeries\", \"type\": \"column\", \"displayType\": \"stacked\", \"markerSize\": 5, \"lineDashType\": \"solid\", \"markerType\": \"none\", \"lineThickness\": 1}, \"title\": {\"fontSize\": 14}, \"legend\": {\"enabled\": true, \"verticalAlign\": \"bottom\", \"fontSize\": 12, \"maxHeight\": 50, \"showAsTable\": false, \"wrap\": true}, \"axes\": {\"axisY\": {\"logarithmic\": false, \"hideLabels\": false, \"hideAxisLine\": false}}}",
+            "keepVisualSettingsConsistentWithParent": true,
+            "panelType": "SumoSearchPanel",
+            "queries": [
+                {
+                    "transient": false,
+                    "queryString": "_sourceCategory={{sourceCategory}} \"WEB_LOG\"\n| json field=_raw \"event.action\" as action\n| timeslice 15m\n| count by _timeslice, action\n| transpose row _timeslice column action",
+                    "queryType": "Logs",
+                    "queryKey": "A",
+                    "metricsQueryMode": null,
+                    "metricsQueryData": null,
+                    "tracesQueryData": null,
+                    "spansQueryData": null,
+                    "parseMode": "Manual",
+                    "timeSource": "Message",
+                    "outputCardinalityLimit": 1000
+                }
+            ],
+            "description": "",
+            "timeRange": null,
+            "coloringRules": null,
+            "linkedDashboards": []
+        },
+        {
+            "id": null,
+            "key": "trend-bandwidth",
+            "title": "Bandwidth Over Time (MB)",
+            "visualSettings": "{\"general\": {\"mode\": \"timeSeries\", \"type\": \"area\", \"displayType\": \"stacked\", \"markerSize\": 5, \"lineDashType\": \"solid\", \"markerType\": \"none\", \"lineThickness\": 1}, \"title\": {\"fontSize\": 14}, \"legend\": {\"enabled\": true, \"verticalAlign\": \"bottom\", \"fontSize\": 12, \"maxHeight\": 50, \"showAsTable\": false, \"wrap\": true}, \"axes\": {\"axisY\": {\"logarithmic\": false, \"hideLabels\": false, \"hideAxisLine\": false}}}",
+            "keepVisualSettingsConsistentWithParent": true,
+            "panelType": "SumoSearchPanel",
+            "queries": [
+                {
+                    "transient": false,
+                    "queryString": "_sourceCategory={{sourceCategory}} \"WEB_LOG\"\n| json field=_raw \"event.upstreamByteUsage\", \"event.downstreamByteUsage\" as up_bytes, down_bytes\n| up_bytes * 1 as up_bytes | down_bytes * 1 as down_bytes\n| timeslice 15m\n| sum(up_bytes) as upload_bytes, sum(down_bytes) as download_bytes by _timeslice\n| round(upload_bytes / 1048576 * 100) / 100 as %\"Upload (MB)\"\n| round(download_bytes / 1048576 * 100) / 100 as %\"Download (MB)\"\n| fields _timeslice, %\"Upload (MB)\", %\"Download (MB)\"",
+                    "queryType": "Logs",
+                    "queryKey": "A",
+                    "metricsQueryMode": null,
+                    "metricsQueryData": null,
+                    "tracesQueryData": null,
+                    "spansQueryData": null,
+                    "parseMode": "Manual",
+                    "timeSource": "Message",
+                    "outputCardinalityLimit": 1000
+                }
+            ],
+            "description": "",
+            "timeRange": null,
+            "coloringRules": null,
+            "linkedDashboards": []
+        },
+        {
+            "id": null,
+            "key": "top-categories",
+            "title": "Top 10 Categories",
+            "visualSettings": "{\"general\": {\"mode\": \"distribution\", \"type\": \"pie\", \"displayType\": \"default\"}, \"title\": {\"fontSize\": 14}, \"legend\": {\"enabled\": true, \"verticalAlign\": \"bottom\", \"fontSize\": 12}}",
+            "keepVisualSettingsConsistentWithParent": true,
+            "panelType": "SumoSearchPanel",
+            "queries": [
+                {
+                    "transient": false,
+                    "queryString": "_sourceCategory={{sourceCategory}} \"WEB_LOG\"\n| json field=_raw \"event.categoryName\" as category\n| where category != \"-\"\n| count by category\n| sort by _count desc\n| limit 10",
+                    "queryType": "Logs",
+                    "queryKey": "A",
+                    "metricsQueryMode": null,
+                    "metricsQueryData": null,
+                    "tracesQueryData": null,
+                    "spansQueryData": null,
+                    "parseMode": "Manual",
+                    "timeSource": "Message",
+                    "outputCardinalityLimit": 1000
+                }
+            ],
+            "description": "",
+            "timeRange": null,
+            "coloringRules": null,
+            "linkedDashboards": []
+        },
+        {
+            "id": null,
+            "key": "top-hosts",
+            "title": "Top 10 Hosts",
+            "visualSettings": "{\"general\": {\"mode\": \"categorical\", \"type\": \"bar\", \"displayType\": \"default\"}, \"title\": {\"fontSize\": 14}, \"legend\": {\"enabled\": true, \"verticalAlign\": \"bottom\", \"fontSize\": 12}}",
+            "keepVisualSettingsConsistentWithParent": true,
+            "panelType": "SumoSearchPanel",
+            "queries": [
+                {
+                    "transient": false,
+                    "queryString": "_sourceCategory={{sourceCategory}} \"WEB_LOG\"\n| json field=_raw \"event.host\" as site\n| where site != \"-\"\n| count as requests by site\n| sort by requests desc\n| limit 10",
+                    "queryType": "Logs",
+                    "queryKey": "A",
+                    "metricsQueryMode": null,
+                    "metricsQueryData": null,
+                    "tracesQueryData": null,
+                    "spansQueryData": null,
+                    "parseMode": "Manual",
+                    "timeSource": "Message",
+                    "outputCardinalityLimit": 1000
+                }
+            ],
+            "description": "",
+            "timeRange": null,
+            "coloringRules": null,
+            "linkedDashboards": []
+        },
+        {
+            "id": null,
+            "key": "top-users",
+            "title": "Top 10 Users by Requests",
+            "visualSettings": "{\"general\": {\"mode\": \"categorical\", \"type\": \"bar\", \"displayType\": \"default\"}, \"title\": {\"fontSize\": 14}, \"legend\": {\"enabled\": true, \"verticalAlign\": \"bottom\", \"fontSize\": 12}}",
+            "keepVisualSettingsConsistentWithParent": true,
+            "panelType": "SumoSearchPanel",
+            "queries": [
+                {
+                    "transient": false,
+                    "queryString": "_sourceCategory={{sourceCategory}} \"WEB_LOG\"\n| json field=_raw \"event.username\" as username\n| where username != \"-\"\n| count as requests by username\n| sort by requests desc\n| limit 10",
+                    "queryType": "Logs",
+                    "queryKey": "A",
+                    "metricsQueryMode": null,
+                    "metricsQueryData": null,
+                    "tracesQueryData": null,
+                    "spansQueryData": null,
+                    "parseMode": "Manual",
+                    "timeSource": "Message",
+                    "outputCardinalityLimit": 1000
+                }
+            ],
+            "description": "",
+            "timeRange": null,
+            "coloringRules": null,
+            "linkedDashboards": []
+        },
+        {
+            "id": null,
+            "key": "blocked-by-category",
+            "title": "Blocked Requests by Category",
+            "visualSettings": "{\"general\": {\"mode\": \"categorical\", \"type\": \"bar\", \"displayType\": \"default\"}, \"title\": {\"fontSize\": 14}, \"legend\": {\"enabled\": true, \"verticalAlign\": \"bottom\", \"fontSize\": 12}}",
+            "keepVisualSettingsConsistentWithParent": true,
+            "panelType": "SumoSearchPanel",
+            "queries": [
+                {
+                    "transient": false,
+                    "queryString": "_sourceCategory={{sourceCategory}} \"WEB_LOG\"\n| json field=_raw \"event.action\", \"event.categoryName\" as action, category\n| where action != \"Allowed\"\n| count as blocked by category\n| sort by blocked desc\n| limit 10",
+                    "queryType": "Logs",
+                    "queryKey": "A",
+                    "metricsQueryMode": null,
+                    "metricsQueryData": null,
+                    "tracesQueryData": null,
+                    "spansQueryData": null,
+                    "parseMode": "Manual",
+                    "timeSource": "Message",
+                    "outputCardinalityLimit": 1000
+                }
+            ],
+            "description": "",
+            "timeRange": null,
+            "coloringRules": null,
+            "linkedDashboards": []
+        },
+        {
+            "id": null,
+            "key": "response-codes",
+            "title": "Response Codes",
+            "visualSettings": "{\"general\": {\"mode\": \"distribution\", \"type\": \"pie\", \"displayType\": \"default\"}, \"title\": {\"fontSize\": 14}, \"legend\": {\"enabled\": true, \"verticalAlign\": \"bottom\", \"fontSize\": 12}}",
+            "keepVisualSettingsConsistentWithParent": true,
+            "panelType": "SumoSearchPanel",
+            "queries": [
+                {
+                    "transient": false,
+                    "queryString": "_sourceCategory={{sourceCategory}} \"WEB_LOG\"\n| json field=_raw \"event.responseCode\" as response_code\n| count by response_code\n| sort by _count desc\n| limit 10",
+                    "queryType": "Logs",
+                    "queryKey": "A",
+                    "metricsQueryMode": null,
+                    "metricsQueryData": null,
+                    "tracesQueryData": null,
+                    "spansQueryData": null,
+                    "parseMode": "Manual",
+                    "timeSource": "Message",
+                    "outputCardinalityLimit": 1000
+                }
+            ],
+            "description": "",
+            "timeRange": null,
+            "coloringRules": null,
+            "linkedDashboards": []
+        },
+        {
+            "id": null,
+            "key": "top-bandwidth-users",
+            "title": "Top 10 Users by Bandwidth (MB)",
+            "visualSettings": "{\"general\": {\"mode\": \"categorical\", \"type\": \"bar\", \"displayType\": \"default\"}, \"title\": {\"fontSize\": 14}, \"legend\": {\"enabled\": true, \"verticalAlign\": \"bottom\", \"fontSize\": 12}}",
+            "keepVisualSettingsConsistentWithParent": true,
+            "panelType": "SumoSearchPanel",
+            "queries": [
+                {
+                    "transient": false,
+                    "queryString": "_sourceCategory={{sourceCategory}} \"WEB_LOG\"\n| json field=_raw \"event.username\", \"event.totalByteCount\" as username, bytes\n| where username != \"-\"\n| bytes * 1 as bytes\n| sum(bytes) as total_bytes by username\n| round(total_bytes / 1048576 * 100) / 100 as mb\n| fields username, mb\n| sort by mb desc\n| limit 10",
+                    "queryType": "Logs",
+                    "queryKey": "A",
+                    "metricsQueryMode": null,
+                    "metricsQueryData": null,
+                    "tracesQueryData": null,
+                    "spansQueryData": null,
+                    "parseMode": "Manual",
+                    "timeSource": "Message",
+                    "outputCardinalityLimit": 1000
+                }
+            ],
+            "description": "",
+            "timeRange": null,
+            "coloringRules": null,
+            "linkedDashboards": []
+        },
+        {
+            "id": null,
+            "key": "requests-by-location",
+            "title": "Requests by Location",
+            "visualSettings": "{\"general\": {\"mode\": \"categorical\", \"type\": \"column\", \"displayType\": \"default\"}, \"title\": {\"fontSize\": 14}, \"legend\": {\"enabled\": true, \"verticalAlign\": \"bottom\", \"fontSize\": 12}}",
+            "keepVisualSettingsConsistentWithParent": true,
+            "panelType": "SumoSearchPanel",
+            "queries": [
+                {
+                    "transient": false,
+                    "queryString": "_sourceCategory={{sourceCategory}} \"WEB_LOG\"\n| json field=_raw \"event.location\" as location\n| count as requests by location\n| sort by requests desc\n| limit 10",
+                    "queryType": "Logs",
+                    "queryKey": "A",
+                    "metricsQueryMode": null,
+                    "metricsQueryData": null,
+                    "tracesQueryData": null,
+                    "spansQueryData": null,
+                    "parseMode": "Manual",
+                    "timeSource": "Message",
+                    "outputCardinalityLimit": 1000
+                }
+            ],
+            "description": "",
+            "timeRange": null,
+            "coloringRules": null,
+            "linkedDashboards": []
+        },
+        {
+            "id": null,
+            "key": "top-applications",
+            "title": "Top 10 Applications",
+            "visualSettings": "{\"general\": {\"mode\": \"categorical\", \"type\": \"bar\", \"displayType\": \"default\"}, \"title\": {\"fontSize\": 14}, \"legend\": {\"enabled\": true, \"verticalAlign\": \"bottom\", \"fontSize\": 12}}",
+            "keepVisualSettingsConsistentWithParent": true,
+            "panelType": "SumoSearchPanel",
+            "queries": [
+                {
+                    "transient": false,
+                    "queryString": "_sourceCategory={{sourceCategory}} \"WEB_LOG\"\n| json field=_raw \"event.applicationName\" as application\n| where application != \"-\"\n| count as requests by application\n| sort by requests desc\n| limit 10",
+                    "queryType": "Logs",
+                    "queryKey": "A",
+                    "metricsQueryMode": null,
+                    "metricsQueryData": null,
+                    "tracesQueryData": null,
+                    "spansQueryData": null,
+                    "parseMode": "Manual",
+                    "timeSource": "Message",
+                    "outputCardinalityLimit": 1000
+                }
+            ],
+            "description": "",
+            "timeRange": null,
+            "coloringRules": null,
+            "linkedDashboards": []
+        },
+        {
+            "id": null,
+            "key": "top-source-ips",
+            "title": "Top 10 Source IPs",
+            "visualSettings": "{\"general\": {\"mode\": \"categorical\", \"type\": \"bar\", \"displayType\": \"default\"}, \"title\": {\"fontSize\": 14}, \"legend\": {\"enabled\": true, \"verticalAlign\": \"bottom\", \"fontSize\": 12}}",
+            "keepVisualSettingsConsistentWithParent": true,
+            "panelType": "SumoSearchPanel",
+            "queries": [
+                {
+                    "transient": false,
+                    "queryString": "_sourceCategory={{sourceCategory}} \"WEB_LOG\"\n| json field=_raw \"event.sourceIpAddress\" as src_ip\n| count as requests by src_ip\n| sort by requests desc\n| limit 10",
+                    "queryType": "Logs",
+                    "queryKey": "A",
+                    "metricsQueryMode": null,
+                    "metricsQueryData": null,
+                    "tracesQueryData": null,
+                    "spansQueryData": null,
+                    "parseMode": "Manual",
+                    "timeSource": "Message",
+                    "outputCardinalityLimit": 1000
+                }
+            ],
+            "description": "",
+            "timeRange": null,
+            "coloringRules": null,
+            "linkedDashboards": []
+        },
+        {
+            "id": null,
+            "key": "recent-blocked",
+            "title": "Recent Blocked / Flagged Requests",
+            "visualSettings": "{\"general\":{\"mode\":\"table\",\"type\":\"table\",\"displayType\":\"default\",\"fontSize\":12},\"title\":{\"fontSize\":14},\"series\":{}}",
+            "keepVisualSettingsConsistentWithParent": true,
+            "panelType": "SumoSearchPanel",
+            "queries": [
+                {
+                    "transient": false,
+                    "queryString": "_sourceCategory={{sourceCategory}} \"WEB_LOG\"\n| json field=_raw \"event.action\", \"event.malware\", \"event.cncFlag\" as action, malware, cnc_flag\n| where action != \"Allowed\" or malware != \"0\" or cnc_flag != \"0\"\n| json field=_raw \"event.username\", \"event.sourceIpAddress\", \"event.computerName\", \"event.host\", \"event.url\", \"event.categoryName\", \"event.responseCode\" as username, src_ip, computer, site, url, category, response_code\n| formatDate(_messagetime, \"yyyy-MM-dd HH:mm:ss\") as time\n| count by time, username, src_ip, computer, site, url, category, action, response_code\n| fields - _count\n| sort by time desc\n| limit 100",
+                    "queryType": "Logs",
+                    "queryKey": "A",
+                    "metricsQueryMode": null,
+                    "metricsQueryData": null,
+                    "tracesQueryData": null,
+                    "spansQueryData": null,
+                    "parseMode": "Manual",
+                    "timeSource": "Message",
+                    "outputCardinalityLimit": 1000
+                }
+            ],
+            "description": "Raw events that were not allowed, or were flagged as malware/C2.",
+            "timeRange": null,
+            "coloringRules": null,
+            "linkedDashboards": []
+        }
+    ],
+    "variables": [
+        {
+            "id": null,
+            "name": "sourceCategory",
+            "displayName": "sourceCategory",
+            "defaultValue": "*",
+            "sourceDefinition": {
+                "variableSourceType": "CsvVariableSourceDefinition",
+                "values": "*"
+            },
+            "allowMultiSelect": false,
+            "includeAllOption": true,
+            "hideFromUI": false,
+            "valueType": "Any"
+        }
+    ],
+    "coloringRules": [],
+    "schedules": null
+}
