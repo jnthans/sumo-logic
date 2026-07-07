@@ -1,0 +1,137 @@
+integration: Incident iQ
+name: Restore Deleted Ticket
+type: Containment
+script:
+  code: |
+    # NOTE: POST /api/v1.0/tickets/{id}/undelete is inferred from Incident iQ's
+    # /undelete endpoint pattern (confirmed for assets in vendor support
+    # threads) and is not publicly documented for tickets. Verify against a
+    # throwaway ticket in a sandbox before production use.
+    import os
+    import re
+    import sys
+    import json
+    import urllib3
+    import argparse
+    import requests
+
+
+    # All parameters are passed to the container as environment variables named
+    # after the ids declared in this YAML file.
+    class EnvDefault(argparse.Action):
+        def __init__(self, required=True, default=None, **kwargs):
+            env_var = kwargs.get("dest")
+            default = os.environ.get(env_var, default) if env_var in os.environ else default
+            required = False if required and default else required
+            super(EnvDefault, self).__init__(default=default, required=required, **kwargs)
+
+        def __call__(self, parser, namespace, values, option_string=None):
+            setattr(namespace, self.dest, values)
+
+
+    # Incident iQ ids are GUIDs. Validate any id spliced into a URL path so an
+    # attacker-influenced artifact cannot redirect the request to another route.
+    GUID_RE = re.compile(r'^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}\Z')
+
+
+    def require_guid(value, label):
+        candidate = (value or '').strip()
+        if not GUID_RE.match(candidate):
+            raise Exception('{label} must be a GUID, got: {v!r}'.format(label=label, v=candidate))
+        return candidate
+
+
+    try:
+        parsers = argparse.ArgumentParser()
+        parsers.add_argument('--api_url', help='API URL, REQUIRED', required=True, action=EnvDefault)
+        parsers.add_argument('--api_token', help='API Token, REQUIRED', required=True, action=EnvDefault)
+        parsers.add_argument('--site_id', help='Site ID, REQUIRED', required=True, action=EnvDefault)
+        parsers.add_argument('--timeout', help='timeout', required=False, action=EnvDefault)
+        parsers.add_argument('--verify', help='verify', required=False, action=EnvDefault)
+        parsers.add_argument('--proxy_url', help='proxy_url', required=False, action=EnvDefault)
+
+        parsers.add_argument('--ticket_id', help='Ticket ID, REQUIRED', required=True, action=EnvDefault)
+        args, unknown = parsers.parse_known_args()
+
+        proxies = {'http': args.proxy_url, 'https': args.proxy_url} if args.proxy_url else None
+        try:
+            timeout = float(args.timeout)
+        except (ValueError, TypeError):
+            timeout = 60.0
+        verify = str(args.verify).lower() != 'false'
+        if not verify:
+            urllib3.disable_warnings()
+
+        base_url = args.api_url.rstrip('/')
+        session = requests.Session()
+        session.headers.update({
+            'Authorization': 'Bearer {token}'.format(token=args.api_token),
+            'SiteId': args.site_id,
+            'Client': 'ApiClient',
+            'Accept': 'application/json, text/plain, */*',
+        })
+
+        def unwrap(payload):
+            if isinstance(payload, dict) and isinstance(payload.get('Item'), dict):
+                payload = payload['Item']
+            if isinstance(payload, dict):
+                if payload.get('StatusName') is None and payload.get('TicketStatusName') is not None:
+                    payload['StatusName'] = payload.get('TicketStatusName')
+                if payload.get('StatusName') is None and isinstance(payload.get('Status'), dict):
+                    payload['StatusName'] = payload['Status'].get('Name')
+            return payload
+
+        ticket_id = require_guid(args.ticket_id, 'Ticket ID')
+        response = session.request('POST', '{host}/api/v1.0/tickets/{tid}/undelete'.format(host=base_url, tid=ticket_id),
+                                   timeout=timeout, verify=verify, proxies=proxies)
+        if response.status_code < 200 or response.status_code >= 300:
+            raise Exception('Incident iQ API returned HTTP {code} for POST /api/v1.0/tickets/{tid}/undelete: {body}'.format(
+                code=response.status_code, tid=ticket_id, body=response.text[:500]))
+
+        # If the endpoint echoes the ticket, surface its fields and use its
+        # IsDeleted as ground truth: a 2xx that still reports IsDeleted true is
+        # a no-op, not a restore, so don't claim success on the inferred route.
+        try:
+            ticket = unwrap(response.json()) if response.text else None
+        except ValueError:
+            ticket = None
+        if isinstance(ticket, dict) and ticket.get('IsDeleted') is True:
+            raise Exception('Undelete returned {code} but the ticket is still deleted (IsDeleted is true).'.format(
+                code=response.status_code))
+
+        result = {'TicketId': ticket_id, 'Restored': True}
+        if isinstance(ticket, dict):
+            for key in ('TicketNumber', 'Subject', 'StatusName', 'IsDeleted'):
+                if ticket.get(key) is not None:
+                    result[key] = ticket.get(key)
+        print(json.dumps(result))
+        exit(0)
+    except Exception as e:
+        sys.stderr.write(str(e))
+        exit(-1)
+fields:
+  - id: ticket_id
+    label: 'Ticket ID'
+    type: text
+    required: true
+    incident_artifacts: true
+output:
+  - path: TicketId
+    type: text
+  - path: Restored
+    type: text
+  - path: TicketNumber
+    type: text
+  - path: Subject
+    type: text
+  - path: StatusName
+    type: text
+table_view:
+  - display_name: 'Ticket ID'
+    value: TicketId
+  - display_name: 'Restored'
+    value: Restored
+  - display_name: 'Ticket Number'
+    value: TicketNumber
+  - display_name: 'Status'
+    value: StatusName

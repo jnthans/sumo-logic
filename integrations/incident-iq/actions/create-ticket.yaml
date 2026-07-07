@@ -1,0 +1,179 @@
+integration: Incident iQ
+name: Create Ticket
+type: Notification
+script:
+  code: |
+    import os
+    import sys
+    import json
+    import urllib3
+    import argparse
+    import requests
+
+
+    # All parameters are passed to the container as environment variables named
+    # after the ids declared in this YAML file.
+    class EnvDefault(argparse.Action):
+        def __init__(self, required=True, default=None, **kwargs):
+            env_var = kwargs.get("dest")
+            default = os.environ.get(env_var, default) if env_var in os.environ else default
+            required = False if required and default else required
+            super(EnvDefault, self).__init__(default=default, required=required, **kwargs)
+
+        def __call__(self, parser, namespace, values, option_string=None):
+            setattr(namespace, self.dest, values)
+
+
+    try:
+        parsers = argparse.ArgumentParser()
+        parsers.add_argument('--api_url', help='API URL, REQUIRED', required=True, action=EnvDefault)
+        parsers.add_argument('--api_token', help='API Token, REQUIRED', required=True, action=EnvDefault)
+        parsers.add_argument('--site_id', help='Site ID, REQUIRED', required=True, action=EnvDefault)
+        parsers.add_argument('--product_id', help='Product ID, REQUIRED', required=True, action=EnvDefault)
+        parsers.add_argument('--timeout', help='timeout', required=False, action=EnvDefault)
+        parsers.add_argument('--verify', help='verify', required=False, action=EnvDefault)
+        parsers.add_argument('--proxy_url', help='proxy_url', required=False, action=EnvDefault)
+
+        parsers.add_argument('--subject', help='Subject, REQUIRED', required=True, action=EnvDefault)
+        parsers.add_argument('--description', help='Description, REQUIRED', required=True, action=EnvDefault)
+        parsers.add_argument('--requestor_email', help='Requestor email', required=False, action=EnvDefault)
+        parsers.add_argument('--requestor_id', help='Requestor user GUID', required=False, action=EnvDefault)
+        parsers.add_argument('--location_id', help='Location GUID', required=False, action=EnvDefault)
+        parsers.add_argument('--issue_category_id', help='Issue category GUID', required=False, action=EnvDefault)
+        parsers.add_argument('--is_urgent', help='Urgent flag', required=False, action=EnvDefault)
+        args, unknown = parsers.parse_known_args()
+
+        proxies = {'http': args.proxy_url, 'https': args.proxy_url} if args.proxy_url else None
+        try:
+            timeout = float(args.timeout)
+        except (ValueError, TypeError):
+            timeout = 60.0
+        verify = str(args.verify).lower() != 'false'
+        if not verify:
+            urllib3.disable_warnings()
+
+        base_url = args.api_url.rstrip('/')
+        session = requests.Session()
+        session.headers.update({
+            'Authorization': 'Bearer {token}'.format(token=args.api_token),
+            'SiteId': args.site_id,
+            'Client': 'ApiClient',
+            'Accept': 'application/json, text/plain, */*',
+        })
+
+        def call(method, path, body=None, params=None):
+            response = session.request(method, base_url + path, json=body, params=params,
+                                       timeout=timeout, verify=verify, proxies=proxies)
+            if response.status_code < 200 or response.status_code >= 300:
+                raise Exception('Incident iQ API returned HTTP {code} for {method} {path}: {body}'.format(
+                    code=response.status_code, method=method, path=path, body=response.text[:500]))
+            if not response.text:
+                return None
+            try:
+                return response.json()
+            except ValueError:
+                return None
+
+        def unwrap(payload):
+            if isinstance(payload, dict) and isinstance(payload.get('Item'), dict):
+                payload = payload['Item']
+            if isinstance(payload, dict):
+                if payload.get('StatusName') is None and payload.get('TicketStatusName') is not None:
+                    payload['StatusName'] = payload.get('TicketStatusName')
+                if payload.get('StatusName') is None and isinstance(payload.get('Status'), dict):
+                    payload['StatusName'] = payload['Status'].get('Name')
+            return payload
+
+        requestor_email = (args.requestor_email or '').strip()
+        requestor_id = (args.requestor_id or '').strip()
+        if requestor_email and requestor_id:
+            raise Exception('Provide either Requestor Email or Requestor ID, not both.')
+        if not requestor_email and not requestor_id:
+            raise Exception('Provide either Requestor Email or Requestor ID.')
+
+        body = {
+            'ProductId': args.product_id,
+            'Subject': args.subject,
+            'IssueDescription': args.description,
+        }
+        if args.location_id:
+            body['LocationId'] = args.location_id.strip()
+        if args.issue_category_id:
+            body['IssueCategoryId'] = args.issue_category_id.strip()
+        if str(args.is_urgent).lower() == 'true':
+            body['IsUrgent'] = True
+
+        if requestor_email:
+            # The "simple" endpoint resolves the requestor from an email/username.
+            body['ForUserName'] = requestor_email
+            path = '/api/v1.0/tickets/simple/new'
+        else:
+            body['ForId'] = requestor_id
+            path = '/api/v1.0/tickets/new'
+
+        ticket = unwrap(call('POST', path, body=body))
+        if not isinstance(ticket, dict):
+            # A 2xx with an empty or non-object body means we have no ticket
+            # identity to return; fail loudly rather than report a hollow success.
+            raise Exception('Ticket create returned no ticket object (empty or non-JSON response body).')
+        print(json.dumps(ticket))
+        exit(0)
+    except Exception as e:
+        sys.stderr.write(str(e))
+        exit(-1)
+fields:
+  - id: subject
+    label: 'Subject'
+    type: text
+    required: true
+  - id: description
+    label: 'Description'
+    type: textarea
+    required: true
+  - id: requestor_email
+    label: 'Requestor Email'
+    type: text
+    required: false
+    incident_artifacts: true
+    observables:
+      - userdetail
+  - id: requestor_id
+    label: 'Requestor ID (user GUID, alternative to email)'
+    type: text
+    required: false
+  - id: location_id
+    label: 'Location ID'
+    type: text
+    required: false
+  - id: issue_category_id
+    label: 'Issue Category ID'
+    type: text
+    required: false
+  - id: is_urgent
+    label: 'Urgent'
+    type: checkbox
+    required: false
+output:
+  - path: TicketId
+    type: text
+  - path: TicketNumber
+    type: text
+  - path: Subject
+    type: text
+  - path: StatusName
+    type: text
+  - path: CreatedDate
+    type: text
+  - path: IsUrgent
+    type: text
+table_view:
+  - display_name: 'Ticket Number'
+    value: TicketNumber
+  - display_name: 'Ticket ID'
+    value: TicketId
+  - display_name: 'Subject'
+    value: Subject
+  - display_name: 'Status'
+    value: StatusName
+  - display_name: 'Created'
+    value: CreatedDate

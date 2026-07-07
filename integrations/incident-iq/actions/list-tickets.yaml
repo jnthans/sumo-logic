@@ -1,0 +1,187 @@
+integration: Incident iQ
+name: List Tickets
+type: Enrichment
+script:
+  code: |
+    import os
+    import re
+    import sys
+    import json
+    import urllib3
+    import argparse
+    import requests
+
+
+    # All parameters are passed to the container as environment variables named
+    # after the ids declared in this YAML file.
+    class EnvDefault(argparse.Action):
+        def __init__(self, required=True, default=None, **kwargs):
+            env_var = kwargs.get("dest")
+            default = os.environ.get(env_var, default) if env_var in os.environ else default
+            required = False if required and default else required
+            super(EnvDefault, self).__init__(default=default, required=required, **kwargs)
+
+        def __call__(self, parser, namespace, values, option_string=None):
+            setattr(namespace, self.dest, values)
+
+
+    GUID_RE = re.compile(r'^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}\Z')
+
+    try:
+        parsers = argparse.ArgumentParser()
+        parsers.add_argument('--api_url', help='API URL, REQUIRED', required=True, action=EnvDefault)
+        parsers.add_argument('--api_token', help='API Token, REQUIRED', required=True, action=EnvDefault)
+        parsers.add_argument('--site_id', help='Site ID, REQUIRED', required=True, action=EnvDefault)
+        parsers.add_argument('--timeout', help='timeout', required=False, action=EnvDefault)
+        parsers.add_argument('--verify', help='verify', required=False, action=EnvDefault)
+        parsers.add_argument('--proxy_url', help='proxy_url', required=False, action=EnvDefault)
+
+        parsers.add_argument('--filter_facet', help='Filter facet', required=False, action=EnvDefault)
+        parsers.add_argument('--filter_value', help='Filter value', required=False, action=EnvDefault)
+        parsers.add_argument('--only_show_deleted', help='Only show deleted', required=False, action=EnvDefault)
+        parsers.add_argument('--page', help='Page', required=False, action=EnvDefault)
+        parsers.add_argument('--page_size', help='Page size', required=False, action=EnvDefault)
+        parsers.add_argument('--sort_direction', help='Sort direction', required=False, action=EnvDefault)
+        args, unknown = parsers.parse_known_args()
+
+        proxies = {'http': args.proxy_url, 'https': args.proxy_url} if args.proxy_url else None
+        try:
+            timeout = float(args.timeout)
+        except (ValueError, TypeError):
+            timeout = 60.0
+        verify = str(args.verify).lower() != 'false'
+        if not verify:
+            urllib3.disable_warnings()
+
+        def to_int(value, default):
+            try:
+                return int(value)
+            except (ValueError, TypeError):
+                return default
+
+        base_url = args.api_url.rstrip('/')
+        session = requests.Session()
+        session.headers.update({
+            'Authorization': 'Bearer {token}'.format(token=args.api_token),
+            'SiteId': args.site_id,
+            'Client': 'ApiClient',
+            'Accept': 'application/json, text/plain, */*',
+        })
+
+        def call(method, path, body=None, params=None):
+            response = session.request(method, base_url + path, json=body, params=params,
+                                       timeout=timeout, verify=verify, proxies=proxies)
+            if response.status_code < 200 or response.status_code >= 300:
+                raise Exception('Incident iQ API returned HTTP {code} for {method} {path}: {body}'.format(
+                    code=response.status_code, method=method, path=path, body=response.text[:500]))
+            if not response.text:
+                return None
+            try:
+                return response.json()
+            except ValueError:
+                return None
+
+        def normalize(entity):
+            if isinstance(entity, dict):
+                if entity.get('StatusName') is None and entity.get('TicketStatusName') is not None:
+                    entity['StatusName'] = entity.get('TicketStatusName')
+                if entity.get('StatusName') is None and isinstance(entity.get('Status'), dict):
+                    entity['StatusName'] = entity['Status'].get('Name')
+            return entity
+
+        params = {
+            '$p': to_int(args.page, 0),
+            '$s': to_int(args.page_size, 25),
+            '$o': 'TicketCreatedDate',
+            '$d': args.sort_direction if args.sort_direction in ('Ascending', 'Descending') else 'Descending',
+        }
+        body = {'Schema': 'All'}
+        if str(args.only_show_deleted).lower() == 'true':
+            body['OnlyShowDeleted'] = True
+        if args.filter_facet and args.filter_value:
+            ticket_filter = {'Facet': args.filter_facet.strip()}
+            value = args.filter_value.strip()
+            if GUID_RE.match(value):
+                ticket_filter['Id'] = value
+            else:
+                ticket_filter['Value'] = value
+            body['Filters'] = [ticket_filter]
+
+        payload = call('POST', '/api/v1.0/tickets', body=body, params=params)
+        items = []
+        if isinstance(payload, dict):
+            items = payload.get('Items') or []
+        elif isinstance(payload, list):
+            items = payload
+        items = [normalize(i) for i in items if isinstance(i, dict)]
+        count = payload.get('ItemCount') if isinstance(payload, dict) else None
+        if count is None:
+            count = len(items)
+        print(json.dumps({'Items': items, 'ItemCount': count}))
+        exit(0)
+    except Exception as e:
+        sys.stderr.write(str(e))
+        exit(-1)
+fields:
+  - id: filter_facet
+    label: 'Filter Facet'
+    type: list
+    required: false
+    values:
+      ticketnumber: 'Ticket Number'
+      ticketstate: 'Ticket State'
+      location: 'Location'
+      issuecategory: 'Issue Category'
+      agent: 'Agent'
+      team: 'Team'
+      prioritylevel: 'Priority Level'
+      asset: 'Asset'
+  - id: filter_value
+    label: 'Filter Value'
+    type: text
+    required: false
+  - id: only_show_deleted
+    label: 'Only Show Deleted'
+    type: checkbox
+    required: false
+  - id: page
+    label: 'Page'
+    type: number
+    required: false
+  - id: page_size
+    label: 'Page Size'
+    type: number
+    required: false
+  - id: sort_direction
+    label: 'Sort Direction (by Created Date)'
+    type: list
+    required: false
+    values:
+      Descending: 'Descending'
+      Ascending: 'Ascending'
+output:
+  - path: Items.[].TicketId
+    type: text
+  - path: Items.[].TicketNumber
+    type: text
+  - path: Items.[].Subject
+    type: text
+  - path: Items.[].StatusName
+    type: text
+  - path: Items.[].CreatedDate
+    type: text
+  - path: Items.[].IsDeleted
+    type: text
+  - path: ItemCount
+    type: text
+table_view:
+  - display_name: 'Ticket Number'
+    value: Items.[].TicketNumber
+  - display_name: 'Subject'
+    value: Items.[].Subject
+  - display_name: 'Status'
+    value: Items.[].StatusName
+  - display_name: 'Created'
+    value: Items.[].CreatedDate
+  - display_name: 'Deleted'
+    value: Items.[].IsDeleted

@@ -1,0 +1,103 @@
+name: Incident iQ
+version: '1.0'
+icon: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAXElEQVR42u3ZQQ0AMAgEMAxNEY4wzRTwZ1nJGejnSCBO1tMJAAAAAAAAAIBlgB4GAAAAAOAPgE0MAACgRgEAAAAAAAAAAAAAAAAAAAAAAPwH3EYBAAAAAAAAluYCw64qzpPD+DMAAAAASUVORK5CYII=
+script:
+   type: python
+   test_connection_code: |
+    import os
+    import sys
+    import urllib3
+    import argparse
+    import requests
+
+
+    # All parameters are passed to the container as environment variables named
+    # after the ids declared in this YAML file.
+    class EnvDefault(argparse.Action):
+        def __init__(self, required=True, default=None, **kwargs):
+            env_var = kwargs.get("dest")
+            default = os.environ.get(env_var, default) if env_var in os.environ else default
+            required = False if required and default else required
+            super(EnvDefault, self).__init__(default=default, required=required, **kwargs)
+
+        def __call__(self, parser, namespace, values, option_string=None):
+            setattr(namespace, self.dest, values)
+
+
+    try:
+        parsers = argparse.ArgumentParser()
+        parsers.add_argument('--api_url', help='API URL, REQUIRED', required=True, action=EnvDefault)
+        parsers.add_argument('--api_token', help='API Token, REQUIRED', required=True, action=EnvDefault)
+        parsers.add_argument('--site_id', help='Site ID, REQUIRED', required=True, action=EnvDefault)
+        parsers.add_argument('--timeout', help='timeout', required=False, action=EnvDefault)
+        parsers.add_argument('--verify', help='verify', required=False, action=EnvDefault)
+        parsers.add_argument('--proxy_url', help='proxy_url', required=False, action=EnvDefault)
+        args, unknown = parsers.parse_known_args()
+
+        proxies = {'http': args.proxy_url, 'https': args.proxy_url} if args.proxy_url else None
+        try:
+            timeout = float(args.timeout)
+        except (ValueError, TypeError):
+            timeout = 60.0
+        verify = str(args.verify).lower() != 'false'
+        if not verify:
+            urllib3.disable_warnings()
+
+        # Cheapest authenticated call: one user, no ProductId dependency. A
+        # failure here can only mean a URL, token, or Site ID problem.
+        endpoint = '{host}/api/v1.0/users'.format(host=args.api_url.rstrip('/'))
+        params = {'$p': 0, '$s': 1, '$o': 'FullName', '$d': 'Ascending'}
+        headers = {
+            'Authorization': 'Bearer {token}'.format(token=args.api_token),
+            'SiteId': args.site_id,
+            'Client': 'ApiClient',
+            'Accept': 'application/json, text/plain, */*',
+        }
+        session = requests.Session()
+        response = session.post(endpoint, headers=headers, json={}, params=params,
+                                timeout=timeout, verify=verify, proxies=proxies)
+        if response.status_code != 200:
+            raise Exception('Connection failed (HTTP {code}): {body}'.format(
+                code=response.status_code, body=response.text[:300]))
+        response.json()
+        exit(0)
+    except Exception as e:
+        sys.stderr.write(str(e))
+        exit(-1)
+docker_repo_tag: 'python3_generic:latest'
+configuration:
+  testable_connection: true
+  require_proxy_config: true
+  data_attributes:
+    api_url:
+        label: 'API URL'
+        type: 'text'
+        required: true
+        validator: url
+        hint: "Your district's Incident iQ base URL, e.g. https://district.incidentiq.com"
+    api_token:
+        label: 'API Token'
+        type: password
+        required: true
+        hint: "Bearer token from Incident iQ Administration > Developer Tools > API"
+    site_id:
+        label: 'Site ID'
+        type: text
+        required: true
+        hint: "Site GUID from Incident iQ Developer Tools (sent as the SiteId header)"
+    product_id:
+        label: 'Product ID'
+        type: text
+        required: true
+        hint: "Product GUID from Incident iQ Developer Tools (used by Create Ticket); create one resource per Incident iQ product"
+    timeout:
+        label: 'Connection Timeout (s)'
+        type: number
+        required: false
+        validator: integer
+        default: '60'
+    verify:
+        label: 'Verify Server Certificate'
+        type: checkbox
+        required: false
+        default: true

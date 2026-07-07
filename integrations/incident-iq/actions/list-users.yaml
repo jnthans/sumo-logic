@@ -1,0 +1,170 @@
+integration: Incident iQ
+name: List Users
+type: Enrichment
+script:
+  code: |
+    import os
+    import re
+    import sys
+    import json
+    import urllib3
+    import argparse
+    import requests
+
+
+    # All parameters are passed to the container as environment variables named
+    # after the ids declared in this YAML file.
+    class EnvDefault(argparse.Action):
+        def __init__(self, required=True, default=None, **kwargs):
+            env_var = kwargs.get("dest")
+            default = os.environ.get(env_var, default) if env_var in os.environ else default
+            required = False if required and default else required
+            super(EnvDefault, self).__init__(default=default, required=required, **kwargs)
+
+        def __call__(self, parser, namespace, values, option_string=None):
+            setattr(namespace, self.dest, values)
+
+
+    # Role ID goes into an OData $filter string literal. Constrain it to a GUID
+    # so a stray quote can't break out of the literal or broaden the query.
+    GUID_RE = re.compile(r'^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}\Z')
+
+
+    try:
+        parsers = argparse.ArgumentParser()
+        parsers.add_argument('--api_url', help='API URL, REQUIRED', required=True, action=EnvDefault)
+        parsers.add_argument('--api_token', help='API Token, REQUIRED', required=True, action=EnvDefault)
+        parsers.add_argument('--site_id', help='Site ID, REQUIRED', required=True, action=EnvDefault)
+        parsers.add_argument('--timeout', help='timeout', required=False, action=EnvDefault)
+        parsers.add_argument('--verify', help='verify', required=False, action=EnvDefault)
+        parsers.add_argument('--proxy_url', help='proxy_url', required=False, action=EnvDefault)
+
+        parsers.add_argument('--role_id', help='Role ID', required=False, action=EnvDefault)
+        parsers.add_argument('--odata_filter', help='Raw $filter expression', required=False, action=EnvDefault)
+        parsers.add_argument('--page', help='Page', required=False, action=EnvDefault)
+        parsers.add_argument('--page_size', help='Page size', required=False, action=EnvDefault)
+        args, unknown = parsers.parse_known_args()
+
+        proxies = {'http': args.proxy_url, 'https': args.proxy_url} if args.proxy_url else None
+        try:
+            timeout = float(args.timeout)
+        except (ValueError, TypeError):
+            timeout = 60.0
+        verify = str(args.verify).lower() != 'false'
+        if not verify:
+            urllib3.disable_warnings()
+
+        def to_int(value, default):
+            try:
+                return int(value)
+            except (ValueError, TypeError):
+                return default
+
+        base_url = args.api_url.rstrip('/')
+        session = requests.Session()
+        session.headers.update({
+            'Authorization': 'Bearer {token}'.format(token=args.api_token),
+            'SiteId': args.site_id,
+            'Client': 'ApiClient',
+            'Accept': 'application/json, text/plain, */*',
+        })
+
+        def call(method, path, body=None, params=None):
+            response = session.request(method, base_url + path, json=body, params=params,
+                                       timeout=timeout, verify=verify, proxies=proxies)
+            if response.status_code < 200 or response.status_code >= 300:
+                raise Exception('Incident iQ API returned HTTP {code} for {method} {path}: {body}'.format(
+                    code=response.status_code, method=method, path=path, body=response.text[:500]))
+            if not response.text:
+                return None
+            try:
+                return response.json()
+            except ValueError:
+                return None
+
+        def normalize(user):
+            if isinstance(user, dict):
+                if user.get('FullName') is None and user.get('Name') is not None:
+                    user['FullName'] = user.get('Name')
+            return user
+
+        params = {
+            '$p': to_int(args.page, 0),
+            '$s': to_int(args.page_size, 25),
+            '$o': 'FullName',
+            '$d': 'Ascending',
+        }
+        if args.odata_filter:
+            params['$filter'] = args.odata_filter.strip()
+        elif args.role_id:
+            role_id = args.role_id.strip()
+            if not GUID_RE.match(role_id):
+                raise Exception('Role ID must be a GUID, got: {v!r}'.format(v=role_id))
+            params['$filter'] = "(RoleId eq '{rid}')".format(rid=role_id)
+
+        payload = call('POST', '/api/v1.0/users', body={}, params=params)
+        items = []
+        if isinstance(payload, dict):
+            items = payload.get('Items') or []
+        elif isinstance(payload, list):
+            items = payload
+        items = [normalize(i) for i in items if isinstance(i, dict)]
+        count = payload.get('ItemCount') if isinstance(payload, dict) else None
+        if count is None:
+            count = len(items)
+        print(json.dumps({'Items': items, 'ItemCount': count}))
+        exit(0)
+    except Exception as e:
+        sys.stderr.write(str(e))
+        exit(-1)
+fields:
+  - id: role_id
+    label: 'Role ID'
+    type: text
+    required: false
+  - id: odata_filter
+    label: 'Raw $filter Expression'
+    type: text
+    required: false
+  - id: page
+    label: 'Page'
+    type: number
+    required: false
+  - id: page_size
+    label: 'Page Size'
+    type: number
+    required: false
+output:
+  - path: Items.[].UserId
+    type: text
+  - path: Items.[].FullName
+    type: text
+  - path: Items.[].Email
+    type: text
+  - path: Items.[].Username
+    type: text
+  - path: Items.[].RoleName
+    type: text
+  - path: Items.[].LocationName
+    type: text
+  - path: Items.[].IsActive
+    type: text
+  - path: Items.[].IsDeleted
+    type: text
+  - path: Items.[].SchoolIdNumber
+    type: text
+  - path: ItemCount
+    type: text
+table_view:
+  - display_name: 'Full Name'
+    value: Items.[].FullName
+  - display_name: 'Email'
+    value: Items.[].Email
+  - display_name: 'Username'
+    value: Items.[].Username
+  - display_name: 'Role'
+    value: Items.[].RoleName
+  - display_name: 'Location'
+    value: Items.[].LocationName
+  - display_name: 'Active'
+    value: Items.[].IsActive

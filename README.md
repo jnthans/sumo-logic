@@ -1,7 +1,8 @@
 # Sumo Logic Artifacts
 
-A public collection of Sumo Logic artifacts — dashboards, playbooks, and other
-reusable content — that you can import into your own Sumo Logic environment.
+A public collection of Sumo Logic artifacts — dashboards, playbooks,
+integrations, and other reusable content — that you can import into your own
+Sumo Logic environment.
 
 ## Contents
 
@@ -16,6 +17,12 @@ reusable content — that you can import into your own Sumo Logic environment.
 | Playbook | Description |
 | --- | --- |
 | [Account Takeover - Identity Containment](automations/playbooks/account-takeover-identity-containment/) | Analyst-initiated ATO response: validate the user in Azure AD, gate on analyst approval, then revoke Azure AD sessions, reset the on-prem AD password (synced to Azure AD and Google Workspace), and suspend/re-enable the Google Workspace account to invalidate Google sessions. |
+
+### Integrations (Automation Service)
+
+| Integration | Description |
+| --- | --- |
+| [Incident iQ](integrations/incident-iq/) | Custom Open Integration Framework integration for the Incident iQ K-12 help desk, mirroring the OOTB Zendesk action set: Create Ticket, Update Ticket (Notification); Delete Ticket, Restore Deleted Ticket (Containment); Get Ticket Details, List Tickets, List Users (Enrichment). |
 
 ## Using a dashboard
 
@@ -149,6 +156,52 @@ Planned follow-ups for evidence-based containment (no out-of-the-box Sumo
 integrations exist for these today): adding confirmed malicious domains to the
 iBoss URL blocklist, and blocking attacker IPs via Microsoft Entra Conditional
 Access named locations / Google Context-Aware Access.
+
+## Using an integration
+
+Custom integrations are built with the Sumo Logic
+[Open Integration Framework](https://www.sumologic.com/help/docs/platform-services/automation-service/integration-framework/about-integration-framework/):
+one integration definition YAML plus one YAML per action, with the action's
+Python embedded. The files upload to the Automation Service as-is — no
+archive packaging step (unlike playbooks).
+
+### Prerequisites
+
+- Sumo Logic Automation Service enabled for your org.
+- A deployed [Automation Bridge](https://help.sumologic.com/docs/platform-services/automation-service/automation-service-bridge/) —
+  **custom integrations execute on your Bridge, not in Sumo's cloud.** The
+  Bridge host needs outbound HTTPS to your Incident iQ site
+  (`https://<district>.incidentiq.com`).
+- Incident iQ **API Token**, **Site ID**, and **Product ID**, all from
+  **Incident iQ Administration ▸ Developer Tools**.
+
+### Import
+
+1. In Sumo Logic, go to **Automation ▸ Integrations** and click the **+** icon.
+2. In the **New Integration** dialog, click **Upload File** and upload
+   [`incident-iq.yaml`](integrations/incident-iq/incident-iq.yaml). An
+   *Incident iQ* integration is created.
+3. Open the new integration, hover over its name, and click the **Upload**
+   button that appears. In the **Upload** dialog select Type **Action**, then
+   upload each of the seven files under
+   [`integrations/incident-iq/actions/`](integrations/incident-iq/actions/).
+4. Click the **+** button next to **Resources** and fill in the resource:
+   API URL, API Token, Site ID, Product ID, and select your **Automation
+   Bridge** as the automation engine.
+5. Click **Test** to validate the connection, then **Save**.
+
+Per-action fields, outputs, and GUID-discovery tips are documented in the
+[integration README](integrations/incident-iq/README.md).
+
+> **Note:** the *Delete Ticket* and *Restore Deleted Ticket* endpoints are
+> inferred from Incident iQ's REST conventions and are not in the public API
+> docs — verify both against a throwaway ticket in a sandbox before using
+> them in production playbooks. Fallback if delete is unavailable: use
+> *Update Ticket* to set the ticket to your district's Cancelled status.
+
+> **Note:** the Product ID binds a resource to one Incident iQ product
+> (e.g., IT Help Desk). If your district runs several products, create one
+> resource per product.
 
 ## Contributing
 

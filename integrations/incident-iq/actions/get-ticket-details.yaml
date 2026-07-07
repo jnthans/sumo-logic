@@ -1,0 +1,150 @@
+integration: Incident iQ
+name: Get Ticket Details
+type: Enrichment
+script:
+  code: |
+    import os
+    import re
+    import sys
+    import json
+    import urllib3
+    import argparse
+    import requests
+
+
+    # All parameters are passed to the container as environment variables named
+    # after the ids declared in this YAML file.
+    class EnvDefault(argparse.Action):
+        def __init__(self, required=True, default=None, **kwargs):
+            env_var = kwargs.get("dest")
+            default = os.environ.get(env_var, default) if env_var in os.environ else default
+            required = False if required and default else required
+            super(EnvDefault, self).__init__(default=default, required=required, **kwargs)
+
+        def __call__(self, parser, namespace, values, option_string=None):
+            setattr(namespace, self.dest, values)
+
+
+    # Incident iQ ids are GUIDs. Validate any id spliced into a URL path so an
+    # attacker-influenced artifact cannot redirect the request to another route.
+    GUID_RE = re.compile(r'^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}\Z')
+
+
+    def require_guid(value, label):
+        candidate = (value or '').strip()
+        if not GUID_RE.match(candidate):
+            raise Exception('{label} must be a GUID, got: {v!r}'.format(label=label, v=candidate))
+        return candidate
+
+
+    try:
+        parsers = argparse.ArgumentParser()
+        parsers.add_argument('--api_url', help='API URL, REQUIRED', required=True, action=EnvDefault)
+        parsers.add_argument('--api_token', help='API Token, REQUIRED', required=True, action=EnvDefault)
+        parsers.add_argument('--site_id', help='Site ID, REQUIRED', required=True, action=EnvDefault)
+        parsers.add_argument('--timeout', help='timeout', required=False, action=EnvDefault)
+        parsers.add_argument('--verify', help='verify', required=False, action=EnvDefault)
+        parsers.add_argument('--proxy_url', help='proxy_url', required=False, action=EnvDefault)
+
+        parsers.add_argument('--ticket_id', help='Ticket ID, REQUIRED', required=True, action=EnvDefault)
+        args, unknown = parsers.parse_known_args()
+
+        proxies = {'http': args.proxy_url, 'https': args.proxy_url} if args.proxy_url else None
+        try:
+            timeout = float(args.timeout)
+        except (ValueError, TypeError):
+            timeout = 60.0
+        verify = str(args.verify).lower() != 'false'
+        if not verify:
+            urllib3.disable_warnings()
+
+        base_url = args.api_url.rstrip('/')
+        session = requests.Session()
+        session.headers.update({
+            'Authorization': 'Bearer {token}'.format(token=args.api_token),
+            'SiteId': args.site_id,
+            'Client': 'ApiClient',
+            'Accept': 'application/json, text/plain, */*',
+        })
+
+        def call(method, path, body=None, params=None):
+            response = session.request(method, base_url + path, json=body, params=params,
+                                       timeout=timeout, verify=verify, proxies=proxies)
+            if response.status_code < 200 or response.status_code >= 300:
+                raise Exception('Incident iQ API returned HTTP {code} for {method} {path}: {body}'.format(
+                    code=response.status_code, method=method, path=path, body=response.text[:500]))
+            if not response.text:
+                return None
+            try:
+                return response.json()
+            except ValueError:
+                return None
+
+        def unwrap(payload):
+            # Single-object endpoints may wrap the entity in an "Item" key, and
+            # status naming varies between deployments; normalize both.
+            if isinstance(payload, dict) and isinstance(payload.get('Item'), dict):
+                payload = payload['Item']
+            if isinstance(payload, dict):
+                if payload.get('StatusName') is None and payload.get('TicketStatusName') is not None:
+                    payload['StatusName'] = payload.get('TicketStatusName')
+                if payload.get('StatusName') is None and isinstance(payload.get('Status'), dict):
+                    payload['StatusName'] = payload['Status'].get('Name')
+            return payload
+
+        ticket_id = require_guid(args.ticket_id, 'Ticket ID')
+        ticket = unwrap(call('GET', '/api/v1.0/tickets/{tid}'.format(tid=ticket_id)))
+        result = ticket if isinstance(ticket, dict) else {}
+        print(json.dumps(result))
+        exit(0)
+    except Exception as e:
+        sys.stderr.write(str(e))
+        exit(-1)
+fields:
+  - id: ticket_id
+    label: 'Ticket ID'
+    type: text
+    required: true
+    incident_artifacts: true
+output:
+  - path: TicketId
+    type: text
+  - path: TicketNumber
+    type: text
+  - path: Subject
+    type: text
+  - path: IssueDescription
+    type: text
+  - path: StatusName
+    type: text
+  - path: CreatedDate
+    type: text
+  - path: ModifiedDate
+    type: text
+  - path: ClosedDate
+    type: text
+  - path: IsDeleted
+    type: text
+  - path: IsUrgent
+    type: text
+  - path: LocationName
+    type: text
+  - path: AssignedToUserId
+    type: text
+table_view:
+  - display_name: 'Ticket Number'
+    value: TicketNumber
+  - display_name: 'Subject'
+    value: Subject
+  - display_name: 'Status'
+    value: StatusName
+  - display_name: 'Created'
+    value: CreatedDate
+  - display_name: 'Modified'
+    value: ModifiedDate
+  - display_name: 'Location'
+    value: LocationName
+  - display_name: 'Urgent'
+    value: IsUrgent
+  - display_name: 'Deleted'
+    value: IsDeleted
